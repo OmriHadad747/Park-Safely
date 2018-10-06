@@ -17,13 +17,19 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.CompoundButton;
+import android.widget.Switch;
+import android.widget.Toast;
+
+import java.util.concurrent.ExecutionException;
 
 
 public class MainActivity extends AppCompatActivity
 {
     private Context context;
-
+    Switch aSwitch;
     final static private String AP_name = "CMIYC_AP";
     final static private String AP_pass = "01234567";
     final private String permissions[] = { Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION,
@@ -37,7 +43,42 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         this.context = getApplicationContext();
+        aSwitch = findViewById(R.id.switch1);
+        aSwitch.setChecked(false);
+        aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (aSwitch.isChecked()) {
+                    ServerTask turnOnTask = new ServerTask();
+                    try {
+                        String answer=turnOnTask.execute("http://192.168.4.1/start_detection").get();
+                        if(answer.equals("OK")){
+                            Toast.makeText(getApplicationContext(),"Detection Enabled",Toast.LENGTH_SHORT).show();
+
+                        }
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                else{
+                    ServerTask turnOnTask = new ServerTask();
+                    try {
+                        String answer=turnOnTask.execute("http://192.168.4.1/end_detection").get();
+                        if(answer.equals("OK")){
+                            Toast.makeText(getApplicationContext(),"Detection Disabled",Toast.LENGTH_SHORT).show();
+
+                        }
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
     }
+
 
     public void WiFi_button_onClick(View v)
     {
@@ -189,7 +230,6 @@ public class MainActivity extends AppCompatActivity
                         Log.d("MY_CHECK", "reconnect() return: " + a);
                         boolean b = wfManager.reconnect();
                         Log.d("MY_CHECK", "reconnect() return: " + b);
-
                         break;
                     }
                 }
