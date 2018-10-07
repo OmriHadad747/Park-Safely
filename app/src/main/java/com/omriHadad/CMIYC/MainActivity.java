@@ -22,17 +22,16 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
-
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-
 
 public class MainActivity extends AppCompatActivity
 {
     Switch detectionSwitch;
+    WifiBroadcastReceiver wfBroadcastReceiver;
     private Context context;
-    final static private String AP_name = "CMIYC_AP";
-    final static private String AP_pass = "01234567";
+    final static private String ap_name = "CMIYC_AP";
+    final static private String ap_pass = "01234567";
     final private String permissions[] = { Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
 
     @Override
@@ -94,11 +93,6 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    public void WiFi_button_onClick(View v)
-    {
-        connectToCMIYC(this.context, this.AP_name, this.AP_pass);
-    }
-
     private void locationEnabling()
     {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -133,23 +127,6 @@ public class MainActivity extends AppCompatActivity
         catch(Exception e){}
     }
 
-    private WifiConfiguration createConfig(String AP_name, String AP_pass)
-    {
-        WifiConfiguration wfConfig = new WifiConfiguration();
-        wfConfig.SSID = String.format("\"%s\"", AP_name);
-
-        wfConfig.preSharedKey = String.format("\"%s\"", AP_pass);
-        wfConfig.hiddenSSID = true;
-        wfConfig.status = WifiConfiguration.Status.ENABLED;
-        wfConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
-        wfConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-        wfConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
-        wfConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
-        wfConfig.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
-
-        return wfConfig;
-    }
-
     private void wifiEnabling(final WifiManager wfManager)
     {
         if(wfManager.isWifiEnabled() == false)
@@ -176,22 +153,37 @@ public class MainActivity extends AppCompatActivity
         return;
     }
 
-    private void connectToCMIYC(Context context, String AP_name, String AP_pass)
+    public void WiFi_button_onClick(View v)
     {
         locationEnabling();
         WifiManager wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         wifiEnabling(wfManager);
 
-        WifiBroadcastReceiver wfBroadReceiver = new WifiBroadcastReceiver(wfManager);
-        registerReceiver(wfBroadReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        this.wfBroadcastReceiver = new WifiBroadcastReceiver(wfManager);
+        registerReceiver(wfBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        Log.d("MY_CHECK", "connectToCmiyc passed");
+    }
 
-        return;
+    private WifiConfiguration createConfig(String ap_name, String ap_pass)
+    {
+        WifiConfiguration wfConfig = new WifiConfiguration();
+        wfConfig.SSID = String.format("\"%s\"", ap_name);
+
+        wfConfig.preSharedKey = String.format("\"%s\"", ap_pass);
+        wfConfig.hiddenSSID = true;
+        wfConfig.status = WifiConfiguration.Status.ENABLED;
+        wfConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
+        wfConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
+        wfConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+        wfConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+        wfConfig.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+
+        return wfConfig;
     }
 
     public class WifiBroadcastReceiver extends BroadcastReceiver
     {
         WifiManager wfManager;
-        boolean seekCmiyc = false;
 
         public WifiBroadcastReceiver(WifiManager wfManager)
         {
@@ -205,17 +197,17 @@ public class MainActivity extends AppCompatActivity
 
             String action = intent.getAction();
 
-            if(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(action) && seekCmiyc)
+            if(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(action))
             {
                 Log.d("MY_CHECK", "start searching after CMIYC");
                 List<ScanResult> srl = wfManager.getScanResults();
                 Log.d("MY_CHECK", "scan result list size is: " + srl.size());
                 for(ScanResult sr : srl)
                 {
-                    if(sr.SSID.equals(AP_name))
+                    if(sr.SSID.equals(ap_name))
                     {
                         Log.d("MY_CHECK", "CMIYC founded");
-                        WifiConfiguration wfConfig = createConfig(AP_name, AP_pass);
+                        WifiConfiguration wfConfig = createConfig(ap_name, ap_pass);
                         int networkId = wfManager.addNetwork(wfConfig);
                         Log.d("MY_CHECK", "addNetwork() return: " + networkId);
                         wfManager.disconnect();
@@ -223,13 +215,8 @@ public class MainActivity extends AppCompatActivity
                         Log.d("MY_CHECK", "enableNetwork() return: " + a);
                         boolean b = wfManager.reconnect();
                         Log.d("MY_CHECK", "reconnect() return: " + b);
-                        seekCmiyc = false;
+                        unregisterReceiver(wfBroadcastReceiver);
                         break;
-                    }
-                    else
-                    {
-                        Log.d("MY_CHECK", sr.SSID + " removed from scan result list");
-                        //srl.remove(sr);
                     }
                 }
             }
