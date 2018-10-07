@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
@@ -17,24 +18,22 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 
 public class MainActivity extends AppCompatActivity
 {
+    Switch detectionSwitch;
     private Context context;
-    Switch aSwitch;
     final static private String AP_name = "CMIYC_AP";
     final static private String AP_pass = "01234567";
-    final private String permissions[] = { Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.CHANGE_WIFI_STATE,
-            Manifest.permission.ACCESS_NETWORK_STATE} ;
+    final private String permissions[] = { Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -43,35 +42,51 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         this.context = getApplicationContext();
-        aSwitch = findViewById(R.id.switch1);
-        aSwitch.setChecked(false);
-        aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (aSwitch.isChecked()) {
-                    ServerTask turnOnTask = new ServerTask();
-                    try {
-                        String answer=turnOnTask.execute("http://192.168.4.1/start_detection").get();
-                        if(answer.equals("OK")){
-                            Toast.makeText(getApplicationContext(),"Detection Enabled",Toast.LENGTH_SHORT).show();
 
-                        }
-                    } catch (ExecutionException e) {
+        configDetectionSwitch();
+    }
+
+    public void configDetectionSwitch()
+    {
+        this.detectionSwitch = findViewById(R.id.detectionSwitch);
+        this.detectionSwitch.setChecked(false);
+        this.detectionSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+            {
+                if (detectionSwitch.isChecked())
+                {
+                    ServerTask turnOnTask = new ServerTask();
+                    try
+                    {
+                        String answer=turnOnTask.execute("http://192.168.4.1/start_detection").get();
+                        if(answer.equals("OK"))
+                            Toast.makeText(context,"Detection Enabled",Toast.LENGTH_SHORT).show();
+                    }
+                    catch (ExecutionException e)
+                    {
                         e.printStackTrace();
-                    } catch (InterruptedException e) {
+                    }
+                    catch (InterruptedException e)
+                    {
                         e.printStackTrace();
                     }
                 }
-                else{
+                else
+                {
                     ServerTask turnOnTask = new ServerTask();
-                    try {
+                    try
+                    {
                         String answer=turnOnTask.execute("http://192.168.4.1/end_detection").get();
-                        if(answer.equals("OK")){
+                        if(answer.equals("OK"))
                             Toast.makeText(getApplicationContext(),"Detection Disabled",Toast.LENGTH_SHORT).show();
-
-                        }
-                    } catch (ExecutionException e) {
+                    }
+                    catch (ExecutionException e)
+                    {
                         e.printStackTrace();
-                    } catch (InterruptedException e) {
+                    }
+                    catch (InterruptedException e)
+                    {
                         e.printStackTrace();
                     }
                 }
@@ -79,77 +94,64 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-
     public void WiFi_button_onClick(View v)
     {
-        /*Intent wifi = new Intent(MainActivity.this, com.omriHadad.CMIYC.WifiActivity.class);
-        startActivity(wifi);*/
-
-        permissionCheck();
         connectToCMIYC(this.context, this.AP_name, this.AP_pass);
     }
 
-    private void permissionCheck()
+    private void locationEnabling()
     {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-                !=
-                PackageManager.PERMISSION_GRANTED
-                ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.CHANGE_WIFI_STATE)
-                        != PackageManager.PERMISSION_GRANTED)
+                != (PackageManager.PERMISSION_GRANTED))
         {
-            Log.d("MY_CHECK", "Requesting permissions");
-
-            //Request permission
+            Log.d("MY_CHECK", "location permission is not granted");
+            Log.d("MY_CHECK", "request location permission");
             ActivityCompat.requestPermissions(this, permissions, 123);
         }
         else
-            Log.d("MY_CHECK", "Permissions already granted");
+        {
+            Log.d("MY_CHECK", "location permissions is granted");
+        }
 
-        Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-        startActivity(myIntent);
+        LocationManager lm = (LocationManager)this.context.getSystemService(Context.LOCATION_SERVICE);
+        try
+        {
+            if(lm.isProviderEnabled(LocationManager.GPS_PROVIDER))
+            {
+                Log.d("MY_CHECK", "location is enabled");
+            }
+            else
+            {
+                Log.d("MY_CHECK", "location is disabled");
+                Log.d("MY_CHECK", "request for enable location");
+                Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(myIntent);
+            }
 
-        return;
+            return;
+        }
+        catch(Exception e){}
     }
 
-    private WifiConfiguration createConfig(String AP_name, String AP_pass, String securityMode)
+    private WifiConfiguration createConfig(String AP_name, String AP_pass)
     {
-        Log.d("MY_CHECK", "found in Main Activity- createConfig()");
-
         WifiConfiguration wfConfig = new WifiConfiguration();
         wfConfig.SSID = String.format("\"%s\"", AP_name);
 
-        if (securityMode.equalsIgnoreCase("OPEN") || securityMode.equalsIgnoreCase("WEP"))
-        {
-            wfConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-        }
-        else if (securityMode.equalsIgnoreCase("PSK"))
-        {
-            Log.i("MY_CHECK", "security mode: " + securityMode);
-
-            wfConfig.preSharedKey = String.format("\"%s\"", AP_pass);
-            wfConfig.hiddenSSID = true;
-            wfConfig.status = WifiConfiguration.Status.ENABLED;
-            wfConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
-            wfConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-            wfConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
-            wfConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
-            wfConfig.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
-        }
-        else
-        {
-            Log.i("MY_CHECK", "# Unsupported security mode: " + securityMode);
-
-            return null;
-        }
+        wfConfig.preSharedKey = String.format("\"%s\"", AP_pass);
+        wfConfig.hiddenSSID = true;
+        wfConfig.status = WifiConfiguration.Status.ENABLED;
+        wfConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
+        wfConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
+        wfConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+        wfConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+        wfConfig.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
 
         return wfConfig;
     }
 
     private void wifiEnabling(final WifiManager wfManager)
     {
-        Log.d("MY_CHECK", "found in Main Activity- wifiEnabling()");
-
         if(wfManager.isWifiEnabled() == false)
         {
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -174,22 +176,9 @@ public class MainActivity extends AppCompatActivity
         return;
     }
 
-    public String getScanResultSecurity(ScanResult sr)
-    {
-        final String cap = sr.capabilities;
-        final String securityModes[] = {"WEP", "PSK", "EAP"};
-
-        for (int i = securityModes.length - 1; i >= 0; i--)
-        {
-            if (cap.contains(securityModes[i]))
-                return securityModes[i];
-        }
-
-        return "OPEN";
-    }
-
     private void connectToCMIYC(Context context, String AP_name, String AP_pass)
     {
+        locationEnabling();
         WifiManager wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         wifiEnabling(wfManager);
 
@@ -202,6 +191,7 @@ public class MainActivity extends AppCompatActivity
     public class WifiBroadcastReceiver extends BroadcastReceiver
     {
         WifiManager wfManager;
+        boolean seekCmiyc = false;
 
         public WifiBroadcastReceiver(WifiManager wfManager)
         {
@@ -211,31 +201,40 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onReceive(Context context, Intent intent)
         {
-            Log.d("MY_CHECK", "found in WifiBroadcastReceiver - onReceive()");
+            Log.d("MY_CHECK", "onReceive() function");
 
             String action = intent.getAction();
 
-            if(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(action))
+            if(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(action) && seekCmiyc)
             {
-                for(ScanResult sr : wfManager.getScanResults())
+                Log.d("MY_CHECK", "start searching after CMIYC");
+                List<ScanResult> srl = wfManager.getScanResults();
+                Log.d("MY_CHECK", "scan result list size is: " + srl.size());
+                for(ScanResult sr : srl)
                 {
                     if(sr.SSID.equals(AP_name))
                     {
-                        String securityMode = getScanResultSecurity(sr);
-                        WifiConfiguration wfConfig = createConfig(AP_name, AP_pass, securityMode);
+                        Log.d("MY_CHECK", "CMIYC founded");
+                        WifiConfiguration wfConfig = createConfig(AP_name, AP_pass);
                         int networkId = wfManager.addNetwork(wfConfig);
-                        Log.d("MY_CHECK", "addNetwork() returned " + networkId);
+                        Log.d("MY_CHECK", "addNetwork() return: " + networkId);
                         wfManager.disconnect();
                         boolean a = wfManager.enableNetwork(networkId, true);
-                        Log.d("MY_CHECK", "reconnect() return: " + a);
+                        Log.d("MY_CHECK", "enableNetwork() return: " + a);
                         boolean b = wfManager.reconnect();
                         Log.d("MY_CHECK", "reconnect() return: " + b);
+                        seekCmiyc = false;
                         break;
                     }
+                    else
+                    {
+                        Log.d("MY_CHECK", sr.SSID + " removed from scan result list");
+                        //srl.remove(sr);
+                    }
                 }
-
-                return;
             }
+
+            return;
         }
     }
 }
