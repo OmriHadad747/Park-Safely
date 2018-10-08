@@ -126,7 +126,7 @@ void loop(void)
     {
       Serial.print("X change!!");
     }
-    if(abs(startY-currY) >= 2)
+    if(abs(startY-currY) >= 2.00)
     {
       Serial.print("Y change!!");
     }
