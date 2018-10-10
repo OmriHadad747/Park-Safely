@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutionException;
 public class MainActivity extends AppCompatActivity
 {
     Switch detectionSwitch;
+    Switch ReceiveDataSwitch;
     WifiBroadcastReceiver wfBroadcastReceiver;
     private Context context;
     final static private String ap_name = "CMIYC_AP";
@@ -43,6 +44,37 @@ public class MainActivity extends AppCompatActivity
         this.context = getApplicationContext();
 
         configDetectionSwitch();
+        configReceiveDataSwitch();
+    }
+
+    public void configReceiveDataSwitch()
+    {
+        this.ReceiveDataSwitch = findViewById(R.id.ReceiveDataSwitch);
+        this.ReceiveDataSwitch.setChecked(false);
+        this.ReceiveDataSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+            {
+                ServerTask turnOnTask = new ServerTask();
+
+                if (ReceiveDataSwitch.isChecked())
+                {
+                    try
+                    {
+                        String answer = turnOnTask.execute("http://192.168.4.1/send_to_app").get();
+                        Log.d("MY_CHECK", "data received: " + answer);
+                    }
+                    catch (ExecutionException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
     }
 
     public void configDetectionSwitch()
@@ -147,8 +179,7 @@ public class MainActivity extends AppCompatActivity
             AlertDialog alert = builder.create();
             alert.show();
         }
-
-        return;
+        else return;
     }
 
     public void WiFi_button_onClick(View v)
@@ -159,14 +190,12 @@ public class MainActivity extends AppCompatActivity
 
         this.wfBroadcastReceiver = new WifiBroadcastReceiver(wfManager);
         registerReceiver(wfBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-        Log.d("MY_CHECK", "connectToCmiyc passed");
     }
 
     private WifiConfiguration createConfig(String ap_name, String ap_pass)
     {
         WifiConfiguration wfConfig = new WifiConfiguration();
         wfConfig.SSID = String.format("\"%s\"", ap_name);
-
         wfConfig.preSharedKey = String.format("\"%s\"", ap_pass);
         wfConfig.hiddenSSID = true;
         wfConfig.status = WifiConfiguration.Status.ENABLED;
