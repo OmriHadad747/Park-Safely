@@ -60,9 +60,10 @@ public class MainActivity extends AppCompatActivity
         {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
             {
+                ServerTask turnOnTask = new ServerTask();
+
                 if (detectionSwitch.isChecked())
                 {
-                    ServerTask turnOnTask = new ServerTask();
                     try
                     {
                         String answer=turnOnTask.execute("http://192.168.4.1/start_detection").get();
@@ -80,7 +81,6 @@ public class MainActivity extends AppCompatActivity
                 }
                 else
                 {
-                    ServerTask turnOnTask = new ServerTask();
                     try
                     {
                         String answer=turnOnTask.execute("http://192.168.4.1/end_detection").get();
@@ -118,9 +118,7 @@ public class MainActivity extends AppCompatActivity
         try
         {
             if(lm.isProviderEnabled(LocationManager.GPS_PROVIDER))
-            {
                 Log.d("MY_CHECK", "location is enabled");
-            }
             else
             {
                 Log.d("MY_CHECK", "location is disabled");
