@@ -203,7 +203,6 @@ public class MainActivity extends AppCompatActivity
     public void PhotoGallery_button_onClick(View v)
     {
         startActivity(new Intent(MainActivity.this, ImageGallery.class));
-
     }
 
     private WifiConfiguration createConfig(String ap_name, String ap_pass)

@@ -7,20 +7,17 @@
 #include <math.h>
 
 //variables
-/*Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
+Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
 double startX, startY, currX, currY;
 boolean initMeasure = false;
-boolean isParking = false;*/
+boolean isParking = false;
 boolean clientConnected = false;
 const char *ap_ssid = "CMIYC_AP";
 const char *ap_password = "01234567";
-boolean getNumOfPackets = false;
-String packet;
-int numOfPackets;
 ESP8266WebServer apServer(80);
 
 //Set the range to whatever is appropriate for your project 
-/*void chooseRange(int range)
+void chooseRange(int range)
 {
   switch(range)
   {
@@ -49,9 +46,9 @@ ESP8266WebServer apServer(80);
       break;
     } 
   }
-}*/
+}
 
-/*void startDetection()
+void startDetection()
 {
   isParking = true;
   apServer.send(200, "text/html", "OK");
@@ -63,7 +60,7 @@ void endDetection()
   isParking = false;
   apServer.send(200, "text/html", "OK");
   Serial.println("end detection");
-}*/
+}
 
 void loadServer()
 {
@@ -80,7 +77,7 @@ void loadServer()
   }
 }
 
-/*void printAccelDate(sensors_event_t event)
+void printAccelDate(sensors_event_t event)
 {
   //Display the results (acceleration is measured in m/s^2)
   Serial.print("X: ");
@@ -93,9 +90,9 @@ void loadServer()
   Serial.print(event.acceleration.z); 
   Serial.print("  ");
   Serial.println("m/s^2 ");
-}*/
+}
 
-/*void runDetection()
+void runDetection()
 {
     //Get a new sensor event
     sensors_event_t event;
@@ -119,13 +116,6 @@ void loadServer()
     {
       Serial.println("Y change!!");
     }
-}*/
-
-void sendToApp()
-{
-  apServer.send(200, "text/html", str);
-  str = " ";
-  Serial.println("data sended");
 }
 
 void setup(void) 
@@ -134,18 +124,18 @@ void setup(void)
 
   //Initialise the access point
   WiFi.softAP(ap_ssid, ap_password);
-  /*apServer.on("/start_detection", startDetection);
-  apServer.on("/end_detection", endDetection);*/
+  apServer.on("/start_detection", startDetection);
+  apServer.on("/end_detection", endDetection);
   apServer.on("/send_to_app", sendToApp); 
   apServer.begin();
 
   //Initialise the sensor
-  /*if(!accel.begin())
+  if(!accel.begin())
   {
     Serial.println("Ooops, no ADXL345 detected ... Check your wiring!");
     while(1);
   }
-  chooseRange(16);*/
+  chooseRange(16);
   
   Serial.println("setup done");
 }
@@ -155,18 +145,12 @@ void loop(void)
   apServer.handleClient();
   loadServer();
   
-  /*if(clientConnected && isParking)
-    runDetection();*/
-  
-  if(clientConnected)
+  if(clientConnected && isParking)
+    runDetection();
+
+  //dont remove
+  /*if(clientConnected)
   {
-    if(!getNumOfPackets)
-    {
-      while(Serial.available()>0)
-      {
-        
-      }
-    }
     
     while(Serial.available()>0)
     {
@@ -175,9 +159,8 @@ void loop(void)
       delay(5);
       Serial.write('x');
     }
-  }
-  
-  
-    
+  }*/
+  //yossi the gay
+      
   delay(500);
 }
