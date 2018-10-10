@@ -18,26 +18,32 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImageAdapter extends BaseAdapter {
+public class ImageAdapter extends BaseAdapter
+{
     private Context context;
     ArrayList<File> images;
-    public ImageAdapter(Context c){
+
+    public ImageAdapter(Context c)
+    {
         context = c;
 
         images=new ArrayList<>();
         String root = Environment.getExternalStorageDirectory().toString();
         File myDir = new File (root + "/asaveImage");
-        if(myDir.exists()){
-        File files[]=myDir.listFiles();
-        for(int i=0; i<files.length; i++) {
-            File file = files[i];
-            /*It's assumed that all file in the path are in supported type*/
-            String filePath = file.getPath();
-            if (filePath.endsWith(".jpg")) // Condition to check .jpg file extension
-                images.add(new File(filePath));
-        }
+        if(myDir.exists())
+        {
+            File files[]=myDir.listFiles();
+            for(int i=0; i<files.length; i++)
+            {
+                File file = files[i];
+                /*It's assumed that all file in the path are in supported type*/
+                String filePath = file.getPath();
+                if (filePath.endsWith(".jpg")) // Condition to check .jpg file extension
+                    images.add(new File(filePath));
+            }
         }
     }
+
     @Override
     public int getCount() {
         return images.size();
@@ -54,13 +60,14 @@ public class ImageAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, ViewGroup parent)
+    {
         ImageView imageView = new ImageView(context);
         File a =images.get(position);
         imageView.setImageURI(Uri.fromFile(a));
         imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         imageView.setLayoutParams(new GridView.LayoutParams(240,240));
-        return imageView;
 
+        return imageView;
     }
 }
