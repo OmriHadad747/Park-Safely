@@ -1,19 +1,16 @@
 package com.omriHadad.CMIYC;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.location.LocationManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
-import android.os.Environment;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -25,17 +22,14 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity
 {
+    final static private String TAG = "MY_CHECK";
     Switch detectionSwitch;
-    Switch ReceiveDataSwitch;
+    //Switch ReceiveDataSwitch;
     WifiBroadcastReceiver wfBroadcastReceiver;
     private Context context;
     final static private String ap_name = "CMIYC_AP";
@@ -51,41 +45,44 @@ public class MainActivity extends AppCompatActivity
         this.context = getApplicationContext();
 
         configDetectionSwitch();
-        configReceiveDataSwitch();
+        //configReceiveDataSwitch();
     }
 
-    public void configReceiveDataSwitch()
+//    public void configReceiveDataSwitch()
+//    {
+//        this.ReceiveDataSwitch = findViewById(R.id.ReceiveDataSwitch);
+//        this.ReceiveDataSwitch.setChecked(false);
+//        this.ReceiveDataSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+//        {
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+//            {
+//                ServerTask turnOnTask = new ServerTask();
+//
+//                if (ReceiveDataSwitch.isChecked())
+//                {
+//                    try
+//                    {
+//                        String answer = turnOnTask.execute("http://192.168.4.1/send_to_app").get();
+//                        Log.d("MY_CHECK", "data received: " + answer);
+//                    }
+//                    catch (ExecutionException e)
+//                    {
+//                        e.printStackTrace();
+//                    }
+//                    catch (InterruptedException e)
+//                    {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//        });
+//    }
+
+    public void Setting_onClick(View v)
     {
-        this.ReceiveDataSwitch = findViewById(R.id.ReceiveDataSwitch);
-        this.ReceiveDataSwitch.setChecked(false);
-        this.ReceiveDataSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
-        {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
-            {
-                ServerTask turnOnTask = new ServerTask();
-
-                if (ReceiveDataSwitch.isChecked())
-                {
-                    try
-                    {
-                        String answer = turnOnTask.execute("http://192.168.4.1/send_to_app").get();
-                        Log.d("MY_CHECK", "data received: " + answer);
-                    }
-                    catch (ExecutionException e)
-                    {
-                        e.printStackTrace();
-                    }
-                    catch (InterruptedException e)
-                    {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
-    }
-    public void Setting_onClick(View v){
             startActivity(new Intent(MainActivity.this, Settings_Activity.class));
     }
+
     public void configDetectionSwitch()
     {
         this.detectionSwitch = findViewById(R.id.detectionSwitch);
@@ -142,24 +139,24 @@ public class MainActivity extends AppCompatActivity
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
                 != (PackageManager.PERMISSION_GRANTED))
         {
-            Log.d("MY_CHECK", "location permission is not granted");
-            Log.d("MY_CHECK", "request location permission");
+            Log.d(TAG, "location permission is not granted");
+            Log.d(TAG, "request location permission");
             ActivityCompat.requestPermissions(this, permissions, 123);
         }
         else
         {
-            Log.d("MY_CHECK", "location permissions is granted");
+            Log.d(TAG, "location permissions is granted");
         }
 
         LocationManager lm = (LocationManager)this.context.getSystemService(Context.LOCATION_SERVICE);
         try
         {
             if(lm.isProviderEnabled(LocationManager.GPS_PROVIDER))
-                Log.d("MY_CHECK", "location is enabled");
+                Log.d(TAG, "location is enabled");
             else
             {
-                Log.d("MY_CHECK", "location is disabled");
-                Log.d("MY_CHECK", "request for enable location");
+                Log.d(TAG, "location is disabled");
+                Log.d(TAG, "request for enable location");
                 Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 startActivity(myIntent);
             }
@@ -171,7 +168,7 @@ public class MainActivity extends AppCompatActivity
 
     private void wifiEnabling(final WifiManager wfManager)
     {
-        if(wfManager.isWifiEnabled() == false)
+        if(!wfManager.isWifiEnabled())
         {
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
@@ -194,12 +191,10 @@ public class MainActivity extends AppCompatActivity
         else return;
     }
 
-
     public void WiFi_button_onClick(View v)
     {
-        locationEnabling();
-
         WifiManager wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        locationEnabling();
         wifiEnabling(wfManager);
 
         this.wfBroadcastReceiver = new WifiBroadcastReceiver(wfManager);
@@ -239,32 +234,38 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onReceive(Context context, Intent intent)
         {
-            Log.d("MY_CHECK", "onReceive() function");
-
+            Log.d(TAG, "onReceive() function");
             String action = intent.getAction();
+            int loopCounter = 1;
 
             if(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(action))
             {
-                Log.d("MY_CHECK", "start searching after CMIYC");
+                Log.d(TAG, "start searching after CMIYC");
                 List<ScanResult> srl = wfManager.getScanResults();
-                Log.d("MY_CHECK", "scan result list size is: " + srl.size());
+                Log.d(TAG, "scan result list size is: " + srl.size());
                 for(ScanResult sr : srl)
                 {
                     if(sr.SSID.equals(ap_name))
                     {
-                        Log.d("MY_CHECK", "CMIYC founded");
+                        Log.d(TAG, "CMIYC founded");
                         WifiConfiguration wfConfig = createConfig(ap_name, ap_pass);
                         int networkId = wfManager.addNetwork(wfConfig);
-                        Log.d("MY_CHECK", "addNetwork() return: " + networkId);
+                        Log.d(TAG, "addNetwork() return: " + networkId);
                         wfManager.disconnect();
                         boolean a = wfManager.enableNetwork(networkId, true);
-                        Log.d("MY_CHECK", "enableNetwork() return: " + a);
+                        Log.d(TAG, "enableNetwork() return: " + a);
                         boolean b = wfManager.reconnect();
-                        Log.d("MY_CHECK", "reconnect() return: " + b);
+                        Log.d(TAG, "reconnect() return: " + b);
                         unregisterReceiver(wfBroadcastReceiver);
                         break;
                     }
+
+                    Log.d(TAG, loopCounter++ + " pass");
                 }
+
+                Log.d(TAG, "CMIYC is not in wifi scan area");
+                Toast.makeText(context, "CMIYC is not in wifi scan area", Toast.LENGTH_SHORT).show();
+                unregisterReceiver(wfBroadcastReceiver);
             }
 
             return;
