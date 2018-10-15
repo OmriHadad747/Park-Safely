@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -27,8 +28,9 @@
             </intent-filter>
         </activity>
         <activity android:name=".WifiActivity" />
-        <activity android:name=".cam" />
-        <activity android:name=".ImageGallery"></activity>
+        <activity android:name=".ImageGallery" />
+        <activity android:name=".Settings_Activity" />
+        <activity android:name=".FullImageActivity"></activity>
     </application>
 
 </manifest>

@@ -51,7 +51,9 @@ public class MainActivity extends AppCompatActivity
 
         configDetectionSwitch();
     }
-
+    public void Setting_onClick(View v){
+            startActivity(new Intent(MainActivity.this, Settings_Activity.class));
+    }
     public void configDetectionSwitch()
     {
         this.detectionSwitch = findViewById(R.id.detectionSwitch);
@@ -69,6 +71,9 @@ public class MainActivity extends AppCompatActivity
                         String answer=turnOnTask.execute("http://192.168.4.1/start_detection").get();
                         if(answer.equals("OK"))
                             Toast.makeText(context,"Detection Enabled",Toast.LENGTH_SHORT).show();
+                        else{
+                            Toast.makeText(context,"Device Not found",Toast.LENGTH_SHORT).show();
+                        }
                     }
                     catch (ExecutionException e)
                     {
@@ -157,6 +162,7 @@ public class MainActivity extends AppCompatActivity
 
         return;
     }
+
 
     public void WiFi_button_onClick(View v)
     {
