@@ -10,7 +10,8 @@
 Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
 double startX, startY, currX, currY;
 boolean initMeasure = false;
-boolean isParking;
+boolean isParking = false;
+boolean clientConnected = false;
 const char *ap_ssid = "CMIYC_AP";
 const char *ap_password = "01234567";
 ESP8266WebServer apServer(80);
@@ -23,25 +24,25 @@ void chooseRange(int range)
     case 16:
     {
       accel.setRange(ADXL345_RANGE_16_G);
-      Serial.print("setRange()-succeeded");
+      Serial.println("chooseRange()succeeded");
       break;
     }
     case 8:
     {
       accel.setRange(ADXL345_RANGE_8_G);
-      Serial.print("setRange()-succeeded");
+      Serial.println("chooseRange()succeeded");
       break;
     }
     case 4:
     {
       accel.setRange(ADXL345_RANGE_4_G);
-      Serial.print("setRange()-succeeded");
+      Serial.println("chooseRange()succeeded");
       break;
     }
     case 2:
     {
       accel.setRange(ADXL345_RANGE_2_G);
-      Serial.print("setRange()-succeeded");
+      Serial.println("chooseRange()succeeded");
       break;
     } 
   }
@@ -58,13 +59,22 @@ void endDetection()
 {
   isParking = false;
   apServer.send(200, "text/html", "OK");
+  Serial.println("end detection");
 }
 
 void loadServer()
 {
   WiFiClient serverConnection = apServer.client();
-  if (serverConnection) 
+  if (serverConnection)
+  {
+    clientConnected = true;
     Serial.println("New client arrived");
+  }
+  else
+  {
+    clientConnected = false;
+    Serial.println("The client leave the network");
+  }
 }
 
 void printAccelDate(sensors_event_t event)
@@ -82,32 +92,8 @@ void printAccelDate(sensors_event_t event)
   Serial.println("m/s^2 ");
 }
 
-void setup(void) 
+void runDetection()
 {
-  Serial.begin(9600);
-
-  //Initialise the access point
-  WiFi.softAP(ap_ssid, ap_password);
-  apServer.on("/start_detection", startDetection);
-  apServer.on("/end_detection", endDetection);
-  apServer.begin();
-
-  //Initialise the sensor
-  if(!accel.begin())
-  {
-    Serial.println("Ooops, no ADXL345 detected ... Check your wiring!");
-    while(1);
-  }
-  chooseRange(16);
-}
-
-void loop(void) 
-{  
-  apServer.handleClient();
-  loadServer();
-
-//  if(isParking)
-//  {
     //Get a new sensor event
     sensors_event_t event;
     accel.getEvent(&event);
@@ -124,13 +110,57 @@ void loop(void)
     
     if(abs(startX-currX) >= 2.00)
     {
-      Serial.print("X change!!");
+      Serial.println("X change!!");
     }
     if(abs(startY-currY) >= 2.00)
     {
-      Serial.print("Y change!!");
+      Serial.println("Y change!!");
     }
-  //}
+}
+
+void setup(void) 
+{
+  Serial.begin(9600);
+
+  //Initialise the access point
+  WiFi.softAP(ap_ssid, ap_password);
+  apServer.on("/start_detection", startDetection);
+  apServer.on("/end_detection", endDetection);
+  apServer.on("/send_to_app", sendToApp); 
+  apServer.begin();
+
+  //Initialise the sensor
+  if(!accel.begin())
+  {
+    Serial.println("Ooops, no ADXL345 detected ... Check your wiring!");
+    while(1);
+  }
+  chooseRange(16);
   
+  Serial.println("setup done");
+}
+
+void loop(void) 
+{  
+  apServer.handleClient();
+  loadServer();
+  
+  if(clientConnected && isParking)
+    runDetection();
+
+  //dont remove
+  /*if(clientConnected)
+  {
+    
+    while(Serial.available()>0)
+    {
+      char ch = Serial.read();
+      str += ch;
+      delay(5);
+      Serial.write('x');
+    }
+  }*/
+  //yossi the gay
+      
   delay(500);
 }
