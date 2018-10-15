@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity
 
     public void Setting_onClick(View v)
     {
-            startActivity(new Intent(MainActivity.this, Settings_Activity.class));
+            startActivity(new Intent(MainActivity.this, SettingsActivity.class));
     }
 
     public void configDetectionSwitch()
