@@ -48,40 +48,29 @@ public class MainActivity extends AppCompatActivity
         //configReceiveDataSwitch();
     }
 
-//    public void configReceiveDataSwitch()
-//    {
-//        this.ReceiveDataSwitch = findViewById(R.id.ReceiveDataSwitch);
-//        this.ReceiveDataSwitch.setChecked(false);
-//        this.ReceiveDataSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
-//        {
-//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
-//            {
-//                ServerTask turnOnTask = new ServerTask();
-//
-//                if (ReceiveDataSwitch.isChecked())
-//                {
-//                    try
-//                    {
-//                        String answer = turnOnTask.execute("http://192.168.4.1/send_to_app").get();
-//                        Log.d("MY_CHECK", "data received: " + answer);
-//                    }
-//                    catch (ExecutionException e)
-//                    {
-//                        e.printStackTrace();
-//                    }
-//                    catch (InterruptedException e)
-//                    {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }
-//        });
-//    }
+    //===========================onClick functions==================================================
 
-    public void Setting_onClick(View v)
+    public void photoGalleryButtonOnClick(View v)
     {
-            startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+        startActivity(new Intent(MainActivity.this, ImageGallery.class));
     }
+
+    public void settingButtonOnClick(View v)
+    {
+        startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+    }
+
+    public void wifiButtonOnClick(View v)
+    {
+        WifiManager wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        wifiEnabling(wfManager);
+        locationEnabling();
+
+        this.wfBroadcastReceiver = new WifiBroadcastReceiver(wfManager);
+        registerReceiver(wfBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+    }
+
+    //===========================switches configuration=============================================
 
     public void configDetectionSwitch()
     {
@@ -134,6 +123,38 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    //    public void configReceiveDataSwitch()
+//    {
+//        this.ReceiveDataSwitch = findViewById(R.id.ReceiveDataSwitch);
+//        this.ReceiveDataSwitch.setChecked(false);
+//        this.ReceiveDataSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+//        {
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+//            {
+//                ServerTask turnOnTask = new ServerTask();
+//
+//                if (ReceiveDataSwitch.isChecked())
+//                {
+//                    try
+//                    {
+//                        String answer = turnOnTask.execute("http://192.168.4.1/send_to_app").get();
+//                        Log.d("MY_CHECK", "data received: " + answer);
+//                    }
+//                    catch (ExecutionException e)
+//                    {
+//                        e.printStackTrace();
+//                    }
+//                    catch (InterruptedException e)
+//                    {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//        });
+//    }
+
+    //===========================general functions==================================================
+
     private void locationEnabling()
     {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -144,9 +165,7 @@ public class MainActivity extends AppCompatActivity
             ActivityCompat.requestPermissions(this, permissions, 123);
         }
         else
-        {
             Log.d(TAG, "location permissions is granted");
-        }
 
         LocationManager lm = (LocationManager)this.context.getSystemService(Context.LOCATION_SERVICE);
         try
@@ -160,8 +179,6 @@ public class MainActivity extends AppCompatActivity
                 Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 startActivity(myIntent);
             }
-
-            return;
         }
         catch(Exception e){}
     }
@@ -170,9 +187,11 @@ public class MainActivity extends AppCompatActivity
     {
         if(!wfManager.isWifiEnabled())
         {
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            Log.d(TAG, "turns on the wifi");
+            wfManager.setWifiEnabled(true);
+            /*AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
-            builder.setMessage("You have to enable your WIFI befor continue");
+            builder.setMessage("You have to enable your WIFI before continue");
             builder.setCancelable(false);
 
             builder.setPositiveButton("Turn On", new DialogInterface.OnClickListener()
@@ -186,24 +205,10 @@ public class MainActivity extends AppCompatActivity
             });
 
             AlertDialog alert = builder.create();
-            alert.show();
+            alert.show();*/
         }
-        else return;
-    }
-
-    public void WiFi_button_onClick(View v)
-    {
-        WifiManager wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        locationEnabling();
-        wifiEnabling(wfManager);
-
-        this.wfBroadcastReceiver = new WifiBroadcastReceiver(wfManager);
-        registerReceiver(wfBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-    }
-
-    public void PhotoGallery_button_onClick(View v)
-    {
-        startActivity(new Intent(MainActivity.this, ImageGallery.class));
+        else
+            Log.d(TAG, "The wifi is already on");
     }
 
     private WifiConfiguration createConfig(String ap_name, String ap_pass)
@@ -222,6 +227,8 @@ public class MainActivity extends AppCompatActivity
         return wfConfig;
     }
 
+    //===========================broadcast receiver definition======================================
+
     public class WifiBroadcastReceiver extends BroadcastReceiver
     {
         WifiManager wfManager;
@@ -234,7 +241,6 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onReceive(Context context, Intent intent)
         {
-            Log.d(TAG, "onReceive() function");
             String action = intent.getAction();
             int loopCounter = 1;
 
@@ -243,32 +249,31 @@ public class MainActivity extends AppCompatActivity
                 Log.d(TAG, "start searching after CMIYC");
                 List<ScanResult> srl = wfManager.getScanResults();
                 Log.d(TAG, "scan result list size is: " + srl.size());
-                for(ScanResult sr : srl)
+
+                if(srl.size() != 0)
                 {
-                    if(sr.SSID.equals(ap_name))
+                    for(ScanResult sr : srl)
                     {
-                        Log.d(TAG, "CMIYC founded");
-                        WifiConfiguration wfConfig = createConfig(ap_name, ap_pass);
-                        int networkId = wfManager.addNetwork(wfConfig);
-                        Log.d(TAG, "addNetwork() return: " + networkId);
-                        wfManager.disconnect();
-                        boolean a = wfManager.enableNetwork(networkId, true);
-                        Log.d(TAG, "enableNetwork() return: " + a);
-                        boolean b = wfManager.reconnect();
-                        Log.d(TAG, "reconnect() return: " + b);
-                        unregisterReceiver(wfBroadcastReceiver);
-                        break;
+                        if(sr.SSID.equals(ap_name))
+                        {
+                            Log.d(TAG, "CMIYC is found");
+                            WifiConfiguration wfConfig = createConfig(ap_name, ap_pass);
+                            int networkId = wfManager.addNetwork(wfConfig);
+                            wfManager.disconnect();
+                            wfManager.enableNetwork(networkId, true);
+                            wfManager.reconnect();
+                            unregisterReceiver(wfBroadcastReceiver);
+                            break;
+                        }
+
+                        Log.d(TAG, "loop number " + loopCounter++ + " pass");
                     }
 
-                    Log.d(TAG, loopCounter++ + " pass");
+                    Log.d(TAG, "CMIYC is not in wifi scan area");
+                    Toast.makeText(context, "CMIYC is not in wifi scan area", Toast.LENGTH_LONG).show();
+                    unregisterReceiver(wfBroadcastReceiver);
                 }
-
-                Log.d(TAG, "CMIYC is not in wifi scan area");
-                Toast.makeText(context, "CMIYC is not in wifi scan area", Toast.LENGTH_SHORT).show();
-                unregisterReceiver(wfBroadcastReceiver);
             }
-
-            return;
         }
     }
 }
