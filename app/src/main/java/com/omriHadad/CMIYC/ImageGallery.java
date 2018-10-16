@@ -9,37 +9,46 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class ImageGallery extends AppCompatActivity {
-
+public class ImageGallery extends AppCompatActivity
+{
     GridView gridView;
     ImageView empty;
     TextView textempty;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_gallery);
+
         gridView=findViewById(R.id.gallery);
         empty=findViewById(R.id.empty);
         textempty=findViewById(R.id.textempty);
+
         ImageAdapter adapter = new ImageAdapter(this);
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent i =new Intent(getApplicationContext(),FullImageActivity.class);
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                Intent i = new Intent(getApplicationContext(),FullImageActivity.class);
                 i.putExtra("id",position);
                 startActivity(i);
             }
         });
-        if(adapter.images==null || adapter.getCount()==0){
+
+        if(adapter.images==null || adapter.getCount()==0)
+        {
             empty.setVisibility(View.VISIBLE);
             empty.setImageDrawable(getResources().getDrawable(R.drawable.ic_photo_library_black_24dp));
             textempty.setVisibility(View.VISIBLE);
 
         }
-        else {
+        else
+        {
             gridView.setVisibility(View.VISIBLE);
             gridView.setAdapter(adapter);
         }
-
     }
 }

@@ -1,6 +1,5 @@
 <resources>
 
-    <string
-        name="app_name">Park Safe</string>
+    <string name="app_name">Park Safe</string>
 
 </resources>

@@ -1,5 +1,6 @@
 package com.omriHadad.CMIYC;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -15,6 +16,6 @@ public class SettingsActivity extends AppCompatActivity
 
     public void editApButtonOnClick(View v)
     {
-
+        startActivity(new Intent(SettingsActivity.this, EditApActivity.class));
     }
 }

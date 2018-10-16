@@ -22,13 +22,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingVertical="2dp"
-                android:clickable="true"
-                android:onClick="editApButtonOnClick">
+                android:paddingVertical="2dp">
 
                 <RelativeLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:foreground="?android:attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:onClick="editApButtonOnClick">
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -56,7 +57,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="2dp"
                 android:layout_margin="10dp"
-                android:background="@color/lightgray"/>
+                android:background="@color/light_gray"/>
 
         </LinearLayout>
 
