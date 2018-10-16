@@ -22,13 +22,15 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
+import android.widget.ToggleButton;
+
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity
 {
     final static private String TAG = "MY_CHECK";
-    Switch detectionSwitch;
+    ToggleButton detectionSwitch;
     //Switch ReceiveDataSwitch;
     WifiBroadcastReceiver wfBroadcastReceiver;
     private Context context;
@@ -74,7 +76,7 @@ public class MainActivity extends AppCompatActivity
 
     public void configDetectionSwitch()
     {
-        this.detectionSwitch = findViewById(R.id.detectionSwitch);
+        this.detectionSwitch = findViewById(R.id.detectionToggle);
         this.detectionSwitch.setChecked(false);
         this.detectionSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
         {

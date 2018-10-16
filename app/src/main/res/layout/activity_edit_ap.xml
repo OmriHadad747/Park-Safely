@@ -1,9 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.omriHadad.CMIYC.EditApActivity">
 
-</android.support.constraint.ConstraintLayout>
+    <!--<android.support.design.widget.TextInputLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="100dp"
+        android:layout_marginLeft="35dp">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/new_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Enter New Access-Point Name for CMIYC"
+            android:background="@color/light_gray"
+            android:visibility="visible"/>
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/new_password"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:hint="Enter New Access-Point Password for CMIYC"
+            android:background="@color/light_gray"/>
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/re_new_password"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:hint="Re-Enter Access-Point Password for CMIYC"
+            android:background="@color/light_gray"/>
+
+    </android.support.design.widget.TextInputLayout>-->
+
+</LinearLayout>
