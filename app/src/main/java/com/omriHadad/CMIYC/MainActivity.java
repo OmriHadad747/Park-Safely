@@ -23,7 +23,6 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
 import android.widget.ToggleButton;
-
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
