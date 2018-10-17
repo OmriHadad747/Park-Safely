@@ -5,33 +5,147 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:layout_marginTop="80dp"
-    android:layout_marginLeft="30dp"
-    android:layout_marginRight="30dp"
+    android:layout_gravity="center"
+    android:background="@color/light_gray"
     tools:context="com.omriHadad.CMIYC.EditApActivity">
+    <LinearLayout
+        android:layout_margin="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        >
 
-    <EditText
-        android:id="@+id/new_name_access_point"
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_account_circle_black_24dp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:ems="12"
-        android:inputType="text"
-        android:hint="Enter New Name For CMIYC"/>
+        android:orientation="vertical"
+        android:layout_gravity="center"
+        android:paddingTop="10dp">
 
-    <EditText
-        android:id="@+id/new_password_access_point"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="13"
-        android:inputType="number"
-        android:hint="Enter New Password For CMIYC"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:paddingTop="10dp"
 
-    <EditText
-        android:id="@+id/re_new_password_access_point"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="14"
-        android:inputType="number"
-        android:hint="Re-Enter New Password For CMIYC" />
+                android:foreground="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                >
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/background_color">
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_gravity="top"
+                        android:background="@color/dark_grey"/>
+                    <EditText
+                        android:paddingLeft="10dp"
+                        android:id="@+id/editText"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:ems="10"
+                        android:background="@android:color/transparent"
+                        android:inputType="textPersonName"
+                        android:selectAllOnFocus="false"
+                        android:singleLine="false"
+                        android:text="Enter New Name"
+                        android:textAllCaps="false" />
+
+                </RelativeLayout>
+
+            </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:foreground="?android:attr/selectableItemBackground"
+            >
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/background_color">
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_gravity="top"
+                    android:background="@color/dark_grey"/>
+                <EditText
+                    android:paddingLeft="10dp"
+                    android:id="@+id/editpass"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:ems="10"
+                    android:background="@android:color/transparent"
+                    android:inputType="textPersonName"
+                    android:text="Enter New Password" />
+
+            </RelativeLayout>
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:foreground="?android:attr/selectableItemBackground"
+            >
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/background_color">
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_gravity="top"
+                    android:background="@color/dark_grey"/>
+                <EditText
+                    android:paddingLeft="10dp"
+                    android:id="@+id/confirmpass"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:ems="10"
+                    android:background="@android:color/transparent"
+                    android:inputType="textPersonName"
+                    android:text="Confirm Your New Password" />
+
+
+
+            </RelativeLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/dark_grey"/>
+        </LinearLayout>
+</LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:src="@drawable/ic_cancel_black_24dp"
+            android:layout_margin="20dp"/>
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+
+            android:src="@drawable/ic_check_circle_black_24dp" />
+
+    </LinearLayout>
 
 </LinearLayout>
