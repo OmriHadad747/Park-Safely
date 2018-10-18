@@ -11,9 +11,9 @@ import android.widget.TextView;
 
 public class ImageGallery extends AppCompatActivity
 {
-    GridView gridView;
-    ImageView empty;
-    TextView textempty;
+    private GridView gridView;
+    private ImageView empty;
+    private TextView textempty;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
