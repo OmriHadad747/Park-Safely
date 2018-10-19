@@ -23,13 +23,15 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
 import android.widget.ToggleButton;
+import android.widget.Toolbar;
+
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity
 {
     final static private String TAG = "MY_CHECK";
-    ToggleButton detectionSwitch;
+    boolean detectionSwitch;
     //Switch ReceiveDataSwitch;
     WifiBroadcastReceiver wfBroadcastReceiver;
     private Context context;
@@ -42,10 +44,13 @@ public class MainActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        android.support.v7.widget.Toolbar toolbar = findViewById(R.id.tool_bar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("Home");
+        detectionSwitch=true;
         this.context = getApplicationContext();
 
-        configDetectionSwitch();
+        //configDetectionSwitch();
         //configReceiveDataSwitch();
     }
 
@@ -66,63 +71,43 @@ public class MainActivity extends AppCompatActivity
         WifiManager wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         wifiEnabling(wfManager);
         locationEnabling();
-
         this.wfBroadcastReceiver = new WifiBroadcastReceiver(wfManager);
         registerReceiver(wfBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
     }
 
     //===========================switches configuration=============================================
 
-    public void configDetectionSwitch()
+    public void configDetectionSwitch(View v)
     {
-        this.detectionSwitch = findViewById(R.id.detectionToggle);
-        this.detectionSwitch.setChecked(false);
-        this.detectionSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
-        {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
-            {
-                ServerTask turnOnTask = new ServerTask();
+            ServerTask turnOnTask = new ServerTask();
 
-                if (detectionSwitch.isChecked())
-                {
-                    try
-                    {
-                        String answer=turnOnTask.execute("http://192.168.4.1/start_detection").get();
-                        if(answer.equals("OK"))
-                            Toast.makeText(context,"Detection Enabled",Toast.LENGTH_SHORT).show();
-                        else{
-                            Toast.makeText(context,"Device Not found",Toast.LENGTH_SHORT).show();
-                        }
+            if (detectionSwitch) {
+                try {
+                    detectionSwitch = false;
+                    String answer = turnOnTask.execute("http://192.168.4.1/start_detection").get();
+                    if (answer.equals("OK"))
+                        Toast.makeText(context, "Detection Enabled", Toast.LENGTH_SHORT).show();
+                    else {
+                        Toast.makeText(context, "Device Not found", Toast.LENGTH_SHORT).show();
                     }
-                    catch (ExecutionException e)
-                    {
-                        e.printStackTrace();
-                    }
-                    catch (InterruptedException e)
-                    {
-                        e.printStackTrace();
-                    }
+                } catch (ExecutionException e) {
+                    //e.printStackTrace();
+                } catch (InterruptedException e) {
+                    //e.printStackTrace();
                 }
-                else
-                {
-                    try
-                    {
-                        String answer=turnOnTask.execute("http://192.168.4.1/end_detection").get();
-                        if(answer.equals("OK"))
-                            Toast.makeText(getApplicationContext(),"Detection Disabled",Toast.LENGTH_SHORT).show();
-                    }
-                    catch (ExecutionException e)
-                    {
-                        e.printStackTrace();
-                    }
-                    catch (InterruptedException e)
-                    {
-                        e.printStackTrace();
-                    }
+            } else {
+                try {
+                    detectionSwitch = true;
+                    String answer = turnOnTask.execute("http://192.168.4.1/end_detection").get();
+                    if (answer.equals("OK"))
+                        Toast.makeText(getApplicationContext(), "Detection Disabled", Toast.LENGTH_SHORT).show();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
-        });
-    }
+            }
 
     //    public void configReceiveDataSwitch()
 //    {
@@ -271,7 +256,7 @@ public class MainActivity extends AppCompatActivity
                     }
 
                     Log.d(TAG, "CMIYC is not in wifi scan area");
-                    Toast.makeText(context, "CMIYC is not in wifi scan area", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "Car device is not in wifi scan area", Toast.LENGTH_LONG).show();
                     unregisterReceiver(wfBroadcastReceiver);
                 }
             }
