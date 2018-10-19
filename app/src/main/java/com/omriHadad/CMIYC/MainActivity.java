@@ -3,7 +3,6 @@ package com.omriHadad.CMIYC;
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -14,25 +13,34 @@ import android.net.wifi.WifiManager;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
-import android.widget.Switch;
 import android.widget.Toast;
 import android.widget.ToggleButton;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import com.alibaba.fastjson.JSON;
 
 public class MainActivity extends AppCompatActivity
 {
-    final static private String TAG = "MY_CHECK";
-    ToggleButton detectionSwitch;
-    //Switch ReceiveDataSwitch;
-    WifiBroadcastReceiver wfBroadcastReceiver;
+    final static private String TAG = "Main-activity";
+    final static private String FILE_NAME = "json_file.txt";
     private Context context;
+    private SystemFiles sf;
+    private File systemFile;
+    ToggleButton detectionSwitch;
+    WifiBroadcastReceiver wfBroadcastReceiver;
     final static private String ap_name = "CMIYC_AP";
     final static private String ap_pass = "01234567";
     final private String permissions[] = { Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
@@ -42,11 +50,94 @@ public class MainActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         this.context = getApplicationContext();
 
-        configDetectionSwitch();
-        //configReceiveDataSwitch();
+        if(!checkIfFileAlreadyExist())
+        {
+            this.sf = new SystemFiles(this.context);
+            File path = this.context.getFilesDir();
+            this.systemFile = new File(path, FILE_NAME);
+            boolean b = writeToFile();
+            Log.d(TAG, "writeToFile() return: " + b);
+        }
+        else
+        {
+            readFromFile();
+        }
+
+
+        //configDetectionSwitch();
+    }
+
+    //===========================logical functions==================================================
+
+    private boolean readFromFile()
+    {
+        int length = (int) this.systemFile.length();
+        byte[] bytes = new byte[length];
+
+        try
+        {
+            FileInputStream streamIn = new FileInputStream(this.systemFile);
+            streamIn.read(bytes);
+            streamIn.close();
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        String fileContents = new String(bytes);
+        this.sf = JSON.parseObject(fileContents, SystemFiles.class);
+
+        return false;
+    }
+
+    private boolean writeToFile()
+    {
+        try
+        {
+            FileOutputStream streamOut = new FileOutputStream(this.systemFile);
+            streamOut.write(JSON.toJSONString(this.sf).getBytes());
+            return true;
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    private boolean checkIfFileAlreadyExist()
+    {
+        InputStream inputStream = null;
+        try
+        {
+            inputStream = this.context.openFileInput(FILE_NAME);
+            if (inputStream != null)
+                return true;
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+
+        try
+        {
+            inputStream.close();
+            return false;
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
     //===========================onClick functions==================================================
@@ -81,13 +172,13 @@ public class MainActivity extends AppCompatActivity
         {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
             {
-                ServerTask turnOnTask = new ServerTask();
+                ServerTask task = new ServerTask();
 
                 if (detectionSwitch.isChecked())
                 {
                     try
                     {
-                        String answer=turnOnTask.execute("http://192.168.4.1/start_detection").get();
+                        String answer=task.execute("http://192.168.4.1/start_detection").get();
                         if(answer.equals("OK"))
                             Toast.makeText(context,"Detection Enabled",Toast.LENGTH_SHORT).show();
                         else{
@@ -107,7 +198,7 @@ public class MainActivity extends AppCompatActivity
                 {
                     try
                     {
-                        String answer=turnOnTask.execute("http://192.168.4.1/end_detection").get();
+                        String answer=task.execute("http://192.168.4.1/end_detection").get();
                         if(answer.equals("OK"))
                             Toast.makeText(getApplicationContext(),"Detection Disabled",Toast.LENGTH_SHORT).show();
                     }
@@ -123,36 +214,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
     }
-
-    //    public void configReceiveDataSwitch()
-//    {
-//        this.ReceiveDataSwitch = findViewById(R.id.ReceiveDataSwitch);
-//        this.ReceiveDataSwitch.setChecked(false);
-//        this.ReceiveDataSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
-//        {
-//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
-//            {
-//                ServerTask turnOnTask = new ServerTask();
-//
-//                if (ReceiveDataSwitch.isChecked())
-//                {
-//                    try
-//                    {
-//                        String answer = turnOnTask.execute("http://192.168.4.1/send_to_app").get();
-//                        Log.d("MY_CHECK", "data received: " + answer);
-//                    }
-//                    catch (ExecutionException e)
-//                    {
-//                        e.printStackTrace();
-//                    }
-//                    catch (InterruptedException e)
-//                    {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }
-//        });
-//    }
 
     //===========================general functions==================================================
 
