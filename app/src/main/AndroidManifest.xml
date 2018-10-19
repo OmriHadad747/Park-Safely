@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.omriHadad.CMIYC">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -18,24 +19,33 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <activity
             android:name=".MainActivity"
             android:theme="@style/AppTheme">
+
             <intent-filter>
+
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+
             </intent-filter>
+
         </activity>
+
         <activity
             android:name=".ImageGallery"
             android:theme="@style/AppTheme" />
+
         <activity
             android:name=".SettingsActivity"
             android:theme="@style/AppTheme" />
+
         <activity
             android:name=".FullImageActivity"
             android:theme="@style/AppTheme" />
+
         <activity
             android:name=".EditApActivity"
             android:theme="@style/AppTheme" />
@@ -44,7 +54,9 @@
             android:name="org.apache.http.legacy"
             android:required="false" />
 
-        <activity android:name=".CalibrationActivity"/>
+        <activity
+            android:name=".CalibrationActivity"/>
+
     </application>
 
 </manifest>
