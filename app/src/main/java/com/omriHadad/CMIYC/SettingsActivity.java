@@ -3,6 +3,7 @@ package com.omriHadad.CMIYC;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 public class SettingsActivity extends AppCompatActivity
@@ -12,10 +13,17 @@ public class SettingsActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+        Toolbar toolbar = findViewById(R.id.tool_bar);
+        //setSupportActionBar(toolbar);
+        //getSupportActionBar().setTitle("Settings");
     }
 
     public void editApButtonOnClick(View v)
     {
         startActivity(new Intent(SettingsActivity.this, EditApActivity.class));
+    }
+    public void calibrationOnClick(View v)
+    {
+        startActivity(new Intent(SettingsActivity.this, CalibrationActivity.class));
     }
 }

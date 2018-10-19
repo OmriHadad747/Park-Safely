@@ -2,11 +2,17 @@ package com.omriHadad.CMIYC;
 
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,8 +64,13 @@ public class ServerTask extends AsyncTask<String, Void, String>
 
     public String connect(String url)
     {
-        String result="";
-        HttpClient httpclient = new DefaultHttpClient();
+        String result=null;
+        HttpParams httpParameters = new BasicHttpParams();
+        int timeoutConnection = 3000;
+        HttpConnectionParams.setConnectionTimeout(httpParameters, timeoutConnection);
+        int timeoutSocket = 5000;
+        HttpConnectionParams.setSoTimeout(httpParameters, timeoutSocket);
+        HttpClient httpclient = new DefaultHttpClient(httpParameters);
         // Prepare a request object
         HttpGet httpget = new HttpGet(url);
         // Execute the request
@@ -92,6 +103,7 @@ public class ServerTask extends AsyncTask<String, Void, String>
         {
             String se = e.getMessage();
             Log.d("myTag", se);
+            return "Nok Error";
         }
         return result;
     }

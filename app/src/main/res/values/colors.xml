@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color
-        name="primary_color">#FFc107</color>
+        name="primary_color">#DB4C3E</color>
 
     <color
-        name="primary_dark_color">#FFA000</color>
+        name="primary_dark_color">#CD4C40</color>
 
     <color
-        name="background_color">#fcfcfc</color>
+        name="background_color">#FFFFFF</color>
 
     <color
-        name="light_gray">#ededed</color>
+        name="light_gray">#C2C2C2</color>
 
     <color
         name="deep_purple">#7c4dff</color>
@@ -19,10 +19,14 @@
         name="yellow">#FFB300</color>
 
     <color
-        name="green">#00bfa5</color>
+        name="black">#403A39</color>
 
     <color
-        name="color_accent">#FF4081</color>
+        name="color_accent">#E27065</color>
+    <color
+        name="text_color_primary_bg">#E27065</color>
+    <color
+        name="text_color_secondary">#403A39</color>
 
     <color
         name="dark_grey">#FF6C6C6C</color>

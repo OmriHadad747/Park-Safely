@@ -3,6 +3,7 @@ package com.omriHadad.CMIYC;
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -13,34 +14,27 @@ import android.net.wifi.WifiManager;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.Toast;
 import android.widget.ToggleButton;
+import android.widget.Toolbar;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import com.alibaba.fastjson.JSON;
 
 public class MainActivity extends AppCompatActivity
 {
-    final static private String TAG = "Main-activity";
-    final static private String FILE_NAME = "json_file.txt";
-    private Context context;
-    private SystemFiles sf;
-    private File systemFile;
-    ToggleButton detectionSwitch;
+    final static private String TAG = "MY_CHECK";
+    boolean detectionSwitch;
+    //Switch ReceiveDataSwitch;
     WifiBroadcastReceiver wfBroadcastReceiver;
+    private Context context;
     final static private String ap_name = "CMIYC_AP";
     final static private String ap_pass = "01234567";
     final private String permissions[] = { Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
@@ -50,94 +44,14 @@ public class MainActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        android.support.v7.widget.Toolbar toolbar = findViewById(R.id.tool_bar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("Home");
+        detectionSwitch=true;
         this.context = getApplicationContext();
 
-        if(!checkIfFileAlreadyExist())
-        {
-            this.sf = new SystemFiles(this.context);
-            File path = this.context.getFilesDir();
-            this.systemFile = new File(path, FILE_NAME);
-            boolean b = writeToFile();
-            Log.d(TAG, "writeToFile() return: " + b);
-        }
-        else
-        {
-            readFromFile();
-        }
-
-
         //configDetectionSwitch();
-    }
-
-    //===========================logical functions==================================================
-
-    private boolean readFromFile()
-    {
-        int length = (int) this.systemFile.length();
-        byte[] bytes = new byte[length];
-
-        try
-        {
-            FileInputStream streamIn = new FileInputStream(this.systemFile);
-            streamIn.read(bytes);
-            streamIn.close();
-        }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-
-        String fileContents = new String(bytes);
-        this.sf = JSON.parseObject(fileContents, SystemFiles.class);
-
-        return false;
-    }
-
-    private boolean writeToFile()
-    {
-        try
-        {
-            FileOutputStream streamOut = new FileOutputStream(this.systemFile);
-            streamOut.write(JSON.toJSONString(this.sf).getBytes());
-            return true;
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-
-        return false;
-    }
-
-    private boolean checkIfFileAlreadyExist()
-    {
-        InputStream inputStream = null;
-        try
-        {
-            inputStream = this.context.openFileInput(FILE_NAME);
-            if (inputStream != null)
-                return true;
-        }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-
-        try
-        {
-            inputStream.close();
-            return false;
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-
-        return false;
+        //configReceiveDataSwitch();
     }
 
     //===========================onClick functions==================================================
@@ -157,63 +71,73 @@ public class MainActivity extends AppCompatActivity
         WifiManager wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         wifiEnabling(wfManager);
         locationEnabling();
-
         this.wfBroadcastReceiver = new WifiBroadcastReceiver(wfManager);
         registerReceiver(wfBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
     }
 
     //===========================switches configuration=============================================
 
-    public void configDetectionSwitch()
+    public void configDetectionSwitch(View v)
     {
-        this.detectionSwitch = findViewById(R.id.detectionToggle);
-        this.detectionSwitch.setChecked(false);
-        this.detectionSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
-        {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
-            {
-                ServerTask task = new ServerTask();
+            ServerTask turnOnTask = new ServerTask();
 
-                if (detectionSwitch.isChecked())
-                {
-                    try
-                    {
-                        String answer=task.execute("http://192.168.4.1/start_detection").get();
-                        if(answer.equals("OK"))
-                            Toast.makeText(context,"Detection Enabled",Toast.LENGTH_SHORT).show();
-                        else{
-                            Toast.makeText(context,"Device Not found",Toast.LENGTH_SHORT).show();
-                        }
+            if (detectionSwitch) {
+                try {
+                    detectionSwitch = false;
+                    String answer = turnOnTask.execute("http://192.168.4.1/start_detection").get();
+                    if (answer.equals("OK"))
+                        Toast.makeText(context, "Detection Enabled", Toast.LENGTH_SHORT).show();
+                    else {
+                        Toast.makeText(context, "Device Not found", Toast.LENGTH_SHORT).show();
                     }
-                    catch (ExecutionException e)
-                    {
-                        e.printStackTrace();
-                    }
-                    catch (InterruptedException e)
-                    {
-                        e.printStackTrace();
-                    }
+                } catch (ExecutionException e) {
+                    //e.printStackTrace();
+                } catch (InterruptedException e) {
+                    //e.printStackTrace();
                 }
-                else
-                {
-                    try
-                    {
-                        String answer=task.execute("http://192.168.4.1/end_detection").get();
-                        if(answer.equals("OK"))
-                            Toast.makeText(getApplicationContext(),"Detection Disabled",Toast.LENGTH_SHORT).show();
-                    }
-                    catch (ExecutionException e)
-                    {
-                        e.printStackTrace();
-                    }
-                    catch (InterruptedException e)
-                    {
-                        e.printStackTrace();
-                    }
+            } else {
+                try {
+                    detectionSwitch = true;
+                    String answer = turnOnTask.execute("http://192.168.4.1/end_detection").get();
+                    if (answer.equals("OK"))
+                        Toast.makeText(getApplicationContext(), "Detection Disabled", Toast.LENGTH_SHORT).show();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
-        });
-    }
+            }
+
+    //    public void configReceiveDataSwitch()
+//    {
+//        this.ReceiveDataSwitch = findViewById(R.id.ReceiveDataSwitch);
+//        this.ReceiveDataSwitch.setChecked(false);
+//        this.ReceiveDataSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+//        {
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+//            {
+//                ServerTask turnOnTask = new ServerTask();
+//
+//                if (ReceiveDataSwitch.isChecked())
+//                {
+//                    try
+//                    {
+//                        String answer = turnOnTask.execute("http://192.168.4.1/send_to_app").get();
+//                        Log.d("MY_CHECK", "data received: " + answer);
+//                    }
+//                    catch (ExecutionException e)
+//                    {
+//                        e.printStackTrace();
+//                    }
+//                    catch (InterruptedException e)
+//                    {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//        });
+//    }
 
     //===========================general functions==================================================
 
@@ -332,7 +256,7 @@ public class MainActivity extends AppCompatActivity
                     }
 
                     Log.d(TAG, "CMIYC is not in wifi scan area");
-                    Toast.makeText(context, "CMIYC is not in wifi scan area", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "Car device is not in wifi scan area", Toast.LENGTH_LONG).show();
                     unregisterReceiver(wfBroadcastReceiver);
                 }
             }
