@@ -1,4 +1,4 @@
-package com.omriHadad.ParkSafely;
+package com.omriHadad.CMIYC;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
@@ -18,7 +18,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

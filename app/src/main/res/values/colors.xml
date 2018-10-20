@@ -17,6 +17,14 @@
     </color>
 
     <color
+        name="black">#403A39
+    </color>
+
+    <color
+        name="color_accent">#E27065
+    </color>
+
+    <!--<color
         name="light_gray">#C2C2C2
     </color>
 
@@ -29,21 +37,11 @@
     </color>
 
     <color
-        name="black">#403A39
-    </color>
-
-    <color
-        name="color_accent">#E27065
-    </color>
-
-
-
-    <color
         name="text_color_secondary">#403A39
     </color>
 
     <color
         name="dark_grey">#FF6C6C6C
-    </color>
+    </color>-->
 
 </resources>

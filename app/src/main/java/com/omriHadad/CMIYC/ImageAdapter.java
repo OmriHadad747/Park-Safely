@@ -1,4 +1,4 @@
-package com.omriHadad.ParkSafely;
+package com.omriHadad.CMIYC;
 
 import android.Manifest;
 import android.app.Activity;

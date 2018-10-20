@@ -7,7 +7,7 @@
     android:orientation="vertical"
     android:layout_gravity="center"
 
-    tools:context="com.omriHadad.ParkSafely.FullImageActivity">
+    tools:context="com.omriHadad.CMIYC.FullImageActivity">
 
 
     <ImageView
@@ -21,7 +21,7 @@
     <RelativeLayout android:layout_width="match_parent"
         android:id="@+id/top_bar"
         android:layout_height="70dp"
-        android:background="@color/light_gray"
+        android:background="@color/background_color"
         android:orientation="horizontal"
         android:layout_gravity="top"
         android:layout_alignParentTop="true"
@@ -53,7 +53,7 @@
     <RelativeLayout android:layout_width="match_parent"
         android:id="@+id/buttom_bar"
         android:layout_height="70dp"
-        android:background="@color/light_gray"
+        android:background="@color/background_color"
         android:orientation="horizontal"
         android:layout_gravity="bottom"
         android:gravity="center_vertical"

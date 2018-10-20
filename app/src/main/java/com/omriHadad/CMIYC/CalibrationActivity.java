@@ -1,4 +1,4 @@
-package com.omriHadad.ParkSafely;
+package com.omriHadad.CMIYC;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
