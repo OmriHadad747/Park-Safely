@@ -20,7 +20,7 @@ public class SettingsActivity extends AppCompatActivity
 
     public void editApButtonOnClick(View v)
     {
-        startActivity(new Intent(SettingsActivity.this, EditApActivity.class));
+        startActivity(new Intent(SettingsActivity.this, EditAccessPointActivity.class));
     }
     public void calibrationOnClick(View v)
     {

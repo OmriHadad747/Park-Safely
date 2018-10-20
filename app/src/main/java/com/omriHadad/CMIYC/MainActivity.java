@@ -18,15 +18,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
-import com.google.gson.Gson;
-import java.io.BufferedReader;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -36,8 +32,9 @@ public class MainActivity extends AppCompatActivity
     final static private String FILE_NAME = "json_file.txt";
     final static private String permissions[] = { Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
     private Context context;
-    private SystemFiles sf;
-    private File sysFile;
+    private File file;
+    private AccessPointInfo apInfo;
+    private FileJobs fileJob;
     private WifiBroadcastReceiver wfBroadcastReceiver;
     private String accessPointName;
     private String accessPointPass;
@@ -49,89 +46,32 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         this.context = getApplicationContext();
+        this.detectionSwitch=true;
 
         android.support.v7.widget.Toolbar toolbar = findViewById(R.id.tool_bar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("Park Safe");
-        detectionSwitch=true;
+        getSupportActionBar().setTitle("Park-Safely");
 
-        this.sf = new SystemFiles(this.context);
+        this.apInfo = new AccessPointInfo(this.context);
+        this.fileJob = new FileJobs(this.context, this.apInfo, FILE_NAME);
 
         if(!checkIfFileAlreadyExist())
         {
             File path = this.context.getFilesDir();
-            Log.d(TAG, "path: " + path);
-            this.sysFile = new File(path, FILE_NAME);
-            this.sf.setFileCreated(true);
-            this.sf.setFirstEntered(true);
-            boolean b = writeToFile();
-            Log.d(TAG, "writeToFile() return: " + b);
+            this.file = new File(path, FILE_NAME);  //create file for the first time
+            this.apInfo.setFileCreated(true);
+            this.apInfo.setFirstEntered(true);
+            fileJob.writeJsonFile(this.file);
         }
         else
         {
-            this.sysFile = new File(FILE_NAME);
-            boolean b = readFromFile();
-            this.accessPointName = this.sf.getAccessPointName();
-            this.accessPointPass = this.sf.getAccessPointPass();
-            Log.d(TAG, "readFromFile() return: " + b);
+            this.apInfo = fileJob.readJsonFile();
+            this.accessPointName = this.apInfo.getAccessPointName();
+            this.accessPointPass = this.apInfo.getAccessPointPass();
         }
     }
 
     //===========================logical functions==================================================
-
-    private boolean readFromFile()
-    {
-        final Gson gson = new Gson();
-        String json = "";
-
-        try
-        {
-            InputStream inputStream = this.context.openFileInput(FILE_NAME);
-            if(inputStream != null)
-            {
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                String line = "";
-                StringBuilder stringBuilder = new StringBuilder();
-
-                while ((line = bufferedReader.readLine()) != null)
-                    stringBuilder.append(line);
-
-                inputStream.close();
-                json = stringBuilder.toString();
-                this.sf = gson.fromJson(json, SystemFiles.class);
-                return true;
-            }
-        }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-
-        return false;
-    }
-
-    private boolean writeToFile()
-    {
-        final Gson gson = new Gson();
-        try
-        {
-            Log.d(TAG, "sf1: " + sf);
-            FileOutputStream streamOut = new FileOutputStream(this.sysFile);
-            streamOut.write(gson.toJson(this.sf).getBytes());
-            return true;
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-
-        return false;
-    }
 
     private boolean checkIfFileAlreadyExist()
     {

@@ -2,7 +2,7 @@ package com.omriHadad.CMIYC;
 
 import android.content.Context;
 
-public class SystemFiles
+public class AccessPointInfo
 {
     private Context context;
     private boolean fileCreated = false;
@@ -10,7 +10,7 @@ public class SystemFiles
     private String accessPointName;
     private String accessPointPass;
 
-    public SystemFiles(Context context)
+    public AccessPointInfo(Context context)
     {
         this.context = context;
         this.accessPointName = "CMIYC_AP";

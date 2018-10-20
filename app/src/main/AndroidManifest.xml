@@ -47,7 +47,7 @@
             android:theme="@style/AppTheme" />
 
         <activity
-            android:name=".EditApActivity"
+            android:name=".EditAccessPointActivity"
             android:theme="@style/AppTheme" />
 
         <uses-library
