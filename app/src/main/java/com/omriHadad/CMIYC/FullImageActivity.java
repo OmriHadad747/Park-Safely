@@ -3,13 +3,10 @@ package com.omriHadad.CMIYC;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import java.io.File;
@@ -39,6 +36,13 @@ public class FullImageActivity extends AppCompatActivity
         imageView.setScaleType(ImageView.ScaleType.FIT_XY);
     }
 
+    public void back_buttonOnClick(View v){
+        startActivity(new Intent(FullImageActivity.this, ImageGallery.class));
+    }
+
+    public void delete_buttonOnClick(View v){
+
+    }
     public void imageOnClick(View v){
         if(hide){
             hide=false;
