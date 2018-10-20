@@ -1,4 +1,4 @@
-package com.omriHadad.CMIYC;
+package com.omriHadad.ParkSafely;
 
 import android.os.AsyncTask;
 import android.util.Log;

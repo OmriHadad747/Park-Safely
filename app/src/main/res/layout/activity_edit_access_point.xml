@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/primary_color"
-    tools:context="com.omriHadad.CMIYC.EditAccessPointActivity">
+    tools:context="com.omriHadad.ParkSafely.EditAccessPointActivity">
 
     <LinearLayout
         android:layout_width="match_parent"

@@ -10,7 +10,8 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <include layout="@layout/action_bar"/>
+    <include
+        layout="@layout/action_bar" />
 
     <android.support.v7.widget.CardView
         android:layout_width="match_parent"

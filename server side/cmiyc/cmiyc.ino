@@ -12,7 +12,7 @@ double startX, startY, currX, currY;
 boolean initMeasure = false;
 boolean isParking = false;
 boolean clientConnected = false;
-const char *ap_ssid = "CMIYC_AP";
+const char *ap_ssid = "Park-Safely-AP";
 const char *ap_password = "01234567";
 ESP8266WebServer apServer(80);
 

@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.omriHadad.CMIYC.SettingsActivity"
+    tools:context="com.omriHadad.ParkSafely.SettingsActivity"
     android:background="@color/background_color">
 
     <RelativeLayout
