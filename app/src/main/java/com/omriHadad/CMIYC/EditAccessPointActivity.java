@@ -10,14 +10,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.EditText;
 
+import java.io.File;
+
 public class EditAccessPointActivity extends AppCompatActivity
 {
     final static private String ERR_CONNECTION = "In order to set device username and password you must be connected to the PS-system, please connect to the device to continue";
     final static private String ERR_PASS = "Something with your inputted passwords was wrong, please do it again";
     final static private String ERR_CONNECTION_TITLE = "Device Is Not Connected";
     final static private String ERR_PASS_TITLE = "Passwords Was Wrong";
+    final static private String FILE_NAME = "json_file.txt";
     private Context context;
     private FileJobs fileJob;
+    private AccessPointInfo apInfo;
     private EditText newName, newPassword, confirmNewPassword;
     private String currentName;
 
@@ -28,6 +32,11 @@ public class EditAccessPointActivity extends AppCompatActivity
         setContentView(R.layout.activity_edit_access_point);
         context = getApplicationContext();
 
+        this.apInfo = new AccessPointInfo(this.context);
+        this.fileJob = new FileJobs(this.context, this.apInfo, this.FILE_NAME);
+        this.apInfo = fileJob.readJsonFile();
+        this.currentName = apInfo.getAccessPointName();
+
         if(!isConnectedToPS())
             showMessage(ERR_CONNECTION_TITLE);
         else
@@ -35,6 +44,12 @@ public class EditAccessPointActivity extends AppCompatActivity
             getViewValues();
             if(!confirmPasswords())
                 showMessage(ERR_PASS_TITLE);
+            else
+            {
+                this.apInfo.setAccessPointName(this.newName.toString());
+                this.apInfo.setAccessPointPass(this.newPassword.toString());
+                this.fileJob.writeJsonFile(new File(this.FILE_NAME));
+            }
         }
     }
 

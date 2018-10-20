@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity
         getSupportActionBar().setTitle("Park-Safely");
 
         this.apInfo = new AccessPointInfo(this.context);
-        this.fileJob = new FileJobs(this.context, this.apInfo, FILE_NAME);
+        this.fileJob = new FileJobs(this.context, this.apInfo, this.FILE_NAME);
 
         if(!checkIfFileAlreadyExist())
         {

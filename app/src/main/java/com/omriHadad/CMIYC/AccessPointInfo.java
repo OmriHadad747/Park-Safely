@@ -13,7 +13,7 @@ public class AccessPointInfo
     public AccessPointInfo(Context context)
     {
         this.context = context;
-        this.accessPointName = "CMIYC_AP";
+        this.accessPointName = "Park-Safely-AP";
         this.accessPointPass =  "01234567";
     }
 
