@@ -2,10 +2,11 @@
 
     <!-- Base application theme. -->
     <style
-        name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        name="AppTheme"
+        parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item
-            name="colorPrimary">@color/primary_color
+            name="colorPrimary">@color/primary_dark_color
         </item>
 
         <item
@@ -18,7 +19,9 @@
 
     </style>
 
-    <style name="CustomToolbarStyle" parent="Theme.AppCompat.Light.NoActionBar">
+    <style
+        name="CustomToolbarStyle"
+        parent="Theme.AppCompat.Light.NoActionBar">
 
     </style>
 

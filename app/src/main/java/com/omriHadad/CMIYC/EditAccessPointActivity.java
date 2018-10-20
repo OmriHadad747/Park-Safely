@@ -8,7 +8,9 @@ import android.net.wifi.WifiManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import java.io.File;
 
@@ -39,18 +41,26 @@ public class EditAccessPointActivity extends AppCompatActivity
 
         if(!isConnectedToPS())
             showMessage(ERR_CONNECTION_TITLE);
+    }
+
+    public void checkButton(View v)
+    {
+        getViewValues();
+        if(!confirmPasswords())
+            showMessage(ERR_PASS_TITLE);
         else
         {
-            getViewValues();
-            if(!confirmPasswords())
-                showMessage(ERR_PASS_TITLE);
-            else
-            {
-                this.apInfo.setAccessPointName(this.newName.toString());
-                this.apInfo.setAccessPointPass(this.newPassword.toString());
-                this.fileJob.writeJsonFile(new File(this.FILE_NAME));
-            }
+            this.apInfo.setAccessPointName(this.newName.toString());
+            this.apInfo.setAccessPointPass(this.newPassword.toString());
+            this.fileJob.writeJsonFile(new File(this.FILE_NAME));
+            Toast.makeText(this.context, "User Name & Password Saved Successfully", Toast.LENGTH_LONG).show();
         }
+    }
+
+    public void cancelButton(View v)
+    {
+        Toast.makeText(this.context, "Edit Access Point Configuration Was Canceled", Toast.LENGTH_LONG).show();
+        startActivity(new Intent(EditAccessPointActivity.this, SettingsActivity.class));
     }
 
     private boolean isConnectedToPS()

@@ -89,7 +89,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:padding="5dp"
-                    android:text="connect to CMIYC via wifi"
+                    android:text="connect to Park-Safely system via wifi"
                     android:textColor="@color/text_color_primary_bg" />
 
             </LinearLayout>
@@ -136,7 +136,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:padding="5dp"
-                    android:text="clone photos from CMIYC"
+                    android:text="clone photos from Park-Safely system"
                     android:textColor="@color/text_color_primary_bg" />
 
             </LinearLayout>
@@ -193,7 +193,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:padding="5dp"
-                    android:text="CMIYC &amp; app settings"
+                    android:text="Park-Safely &amp; app settings"
                     android:textColor="@color/text_color_primary_bg" />
 
             </LinearLayout>
