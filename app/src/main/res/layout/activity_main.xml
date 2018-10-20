@@ -20,7 +20,8 @@
         android:paddingTop="80dp"
         app:cardBackgroundColor="@color/primary_dark_color"
         app:cardCornerRadius="20dp"
-        app:cardElevation="5dp"
+        app:cardElevation="3dp"
+        android:translationZ="5dp"
         android:clickable="true"
         android:onClick="configDetectionSwitch">
 
@@ -54,6 +55,9 @@
             android:onClick="wifiButtonOnClick"
             android:layout_height="190dp"
             android:layout_margin="10dp"
+            android:translationZ="5dp"
+            android:elevation="3dp"
+            app:cardCornerRadius="20dp"
             android:clickable="true"
             android:foreground="?android:attr/selectableItemBackground">
 
@@ -99,6 +103,9 @@
 
         <android.support.v7.widget.CardView
             android:foreground="?android:attr/selectableItemBackground"
+            android:translationZ="5dp"
+            android:elevation="3dp"
+            app:cardCornerRadius="20dp"
             android:clickable="true"
             android:layout_width="160dp"
             android:layout_height="190dp"
@@ -158,6 +165,9 @@
             android:layout_width="160dp"
             android:layout_height="190dp"
             android:layout_margin="10dp"
+            android:translationZ="5dp"
+            android:elevation="3dp"
+            app:cardCornerRadius="20dp"
             android:clickable="true"
             android:onClick="settingButtonOnClick">
 
@@ -206,6 +216,9 @@
             android:layout_width="160dp"
             android:layout_height="190dp"
             android:layout_margin="10dp"
+            android:translationZ="5dp"
+            android:elevation="3dp"
+            app:cardCornerRadius="20dp"
             android:clickable="true"
             android:onClick="photoGalleryButtonOnClick">
 

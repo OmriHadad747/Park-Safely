@@ -28,7 +28,7 @@ public class AccessPointInfo
 
     public void setFileCreated(boolean b)
     {
-        this.fileCreated= b;
+        this.fileCreated = b;
     }
 
     public String getAccessPointName(){return this.accessPointName;}
