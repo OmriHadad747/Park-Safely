@@ -98,12 +98,12 @@ public class EditAccessPointActivity extends AppCompatActivity
 
     private void showMessage(String title)
     {
-
         if(title.equals(ERR_CONNECTION_TITLE))
         {
             AlertDialog.Builder alert = new AlertDialog.Builder(this);
             alert.setTitle(title);
             alert.setMessage(ERR_CONNECTION);
+            alert.setCancelable(false);
             alert.setPositiveButton("OK", new DialogInterface.OnClickListener()
             {
                 @Override
@@ -119,6 +119,7 @@ public class EditAccessPointActivity extends AppCompatActivity
             AlertDialog.Builder alert = new AlertDialog.Builder(this);
             alert.setTitle(title);
             alert.setMessage(ERR_PASS);
+            alert.setCancelable(false);
             alert.setPositiveButton("OK", new DialogInterface.OnClickListener()
             {
                 @Override
