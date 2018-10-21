@@ -16,6 +16,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
 import android.widget.Toast;
 import java.io.File;
@@ -40,6 +41,12 @@ public class MainActivity extends AppCompatActivity
     boolean detectionSwitch;
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu,menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
@@ -47,9 +54,10 @@ public class MainActivity extends AppCompatActivity
         this.context = getApplicationContext();
         this.detectionSwitch=true;
 
-        android.support.v7.widget.Toolbar toolbar = findViewById(R.id.tool_bar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("Park-Safely");
+       // android.support.v7.widget.Toolbar toolbar = findViewById(R.id.tool_bar);
+        //setSupportActionBar(toolbar);
+        //getSupportActionBar().setTitle("Park-Safely");
+        //getSupportActionBar().setSubtitle("Find How Hit You'r Vehicle");
 
         this.apInfo = new AccessPointInfo(this.context);
         this.fileJob = new FileJobs(this.context, this.apInfo, this.FILE_NAME);
