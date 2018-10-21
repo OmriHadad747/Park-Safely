@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.omriHadad.CMIYC.SettingsActivity"
-    android:background="@color/background_color">
+    android:background="@color/primary_color">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -45,7 +45,7 @@
                         android:paddingTop="2dp"
                         android:text="Edit CMIYC AP-Name &amp; AP-Password"
                         android:textSize="15dp"
-                        android:textColor="@color/primary_dark_color"/>
+                        android:textColor="@color/text_black"/>
 
                     <ImageView
                         android:layout_width="wrap_content"
@@ -90,7 +90,7 @@
                         android:paddingTop="2dp"
                         android:text="Camera Calibration Settings"
                         android:textSize="15dp"
-                        android:textColor="@color/primary_dark_color"/>
+                        android:textColor="@color/text_black"/>
 
                     <ImageView
                         android:layout_width="wrap_content"

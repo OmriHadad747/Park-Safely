@@ -62,7 +62,6 @@ public class MainActivity extends AppCompatActivity
             this.apInfo.setFirstEntered(true);
             fileJob.writeJsonFile(this.file);
         }
-        else
         {
             this.apInfo = fileJob.readJsonFile();
             this.accessPointName = this.apInfo.getAccessPointName();
