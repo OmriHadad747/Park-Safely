@@ -43,6 +43,7 @@
                     android:drawableLeft="@drawable/ic_edit_24dp"
                     android:hint="Enter New Name"
                     android:layout_margin="5dp"
+                    android:textColor="@color/text_black"
                     android:drawablePadding="5dp"
                     android:background="@drawable/text_box"/>
 

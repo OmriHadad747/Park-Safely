@@ -21,7 +21,7 @@
     <RelativeLayout android:layout_width="match_parent"
         android:id="@+id/top_bar"
         android:layout_height="70dp"
-        android:background="@color/background_color"
+        android:background="@color/primary_color"
         android:orientation="horizontal"
         android:layout_gravity="top"
         android:layout_alignParentTop="true"
@@ -55,7 +55,7 @@
     <RelativeLayout android:layout_width="match_parent"
         android:id="@+id/buttom_bar"
         android:layout_height="70dp"
-        android:background="@color/background_color"
+        android:background="@color/color_accent"
         android:orientation="horizontal"
         android:layout_gravity="bottom"
         android:gravity="center_vertical"
@@ -70,9 +70,7 @@
             app:srcCompat="@drawable/ic_delete_black_24dp"
             android:scaleType="fitXY"
             android:clickable="true"
-            android:onClick="delete_buttonOnClick"
-
-            />
+            android:onClick="delete_buttonOnClick" />
 
         <ImageView
             android:layout_width="40dp"

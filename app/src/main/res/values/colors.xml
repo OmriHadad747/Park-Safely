@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color
+    <!--<color
         name="primary_color">#76B39D
     </color>
 
@@ -22,7 +22,7 @@
 
     <color
         name="color_accent">#E27065
-    </color>
+    </color>-->
 
     <!--<color
         name="light_gray">#C2C2C2
@@ -44,4 +44,25 @@
         name="dark_grey">#FF6C6C6C
     </color>-->
 
+
+    <!-- wish style color set -->
+    <color name="primary_blue">#32B7EC</color>
+    <color name="secondary_light_blue">#55C2EE</color>
+    <color name="header_blue">#20A5DB</color>
+    <color name="text">#FEFEFE</color>78CEF2
+    <color name="baby_blue">#78CEF2</color>
+
+    <color name="primary_color">#32B7EC</color>
+    <color name="primary_dark_color">#20A5DB</color>
+    <color name="color_accent">#FEFEFE</color>78CEF2
+    <color
+        name="background_color">#F8F6F8
+    </color>
+    <color name="text_color_primary_bg">#FEFEFE</color>78CEF2
+    <color
+        name="black">#403A39
+    </color>
+    <color
+        name="text_black">#4D4B4D
+    </color>
 </resources>
