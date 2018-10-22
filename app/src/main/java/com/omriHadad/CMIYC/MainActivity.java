@@ -41,7 +41,8 @@ public class MainActivity extends AppCompatActivity
     boolean detectionSwitch;
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
         getMenuInflater().inflate(R.menu.menu,menu);
         return super.onCreateOptionsMenu(menu);
     }
@@ -54,10 +55,10 @@ public class MainActivity extends AppCompatActivity
         this.context = getApplicationContext();
         this.detectionSwitch=true;
 
-       // android.support.v7.widget.Toolbar toolbar = findViewById(R.id.tool_bar);
-        //setSupportActionBar(toolbar);
-        //getSupportActionBar().setTitle("Park-Safely");
-        //getSupportActionBar().setSubtitle("Find How Hit You'r Vehicle");
+        /*android.support.v7.widget.Toolbar toolbar = findViewById(R.id.tool_bar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("Park-Safely");
+        getSupportActionBar().setSubtitle("Find How Hit You'r Vehicle");*/
 
         this.apInfo = new AccessPointInfo(this.context);
         this.fileJob = new FileJobs(this.context, this.apInfo, this.FILE_NAME);
@@ -68,8 +69,11 @@ public class MainActivity extends AppCompatActivity
             this.file = new File(path, FILE_NAME);  //create file for the first time
             this.apInfo.setFileCreated(true);
             this.apInfo.setFirstEntered(true);
+            this.accessPointName = this.apInfo.getAccessPointName();
+            this.accessPointPass = this.apInfo.getAccessPointPass();
             fileJob.writeJsonFile(this.file);
         }
+        else
         {
             this.apInfo = fileJob.readJsonFile();
             this.accessPointName = this.apInfo.getAccessPointName();
@@ -132,18 +136,18 @@ public class MainActivity extends AppCompatActivity
 
     public void configDetectionSwitch(View v)
     {
-            ServerTask turnOnTask = new ServerTask();
+            ServerTask task = new ServerTask();
 
             if (detectionSwitch)
             {
                 try
                 {
                     detectionSwitch = false;
-                    String answer = turnOnTask.execute("http://192.168.4.1/start_detection").get();
-                    if (answer.equals("OK"))
-                        Toast.makeText(this.context, "Detection Enabled", Toast.LENGTH_SHORT).show();
+                    String answer = task.execute("http://192.168.4.1/start_detection").get();
+                    if (answer.equals("DONE"))
+                        Toast.makeText(this.context, "Detection Enabled", Toast.LENGTH_LONG).show();
                     else
-                        Toast.makeText(this.context, "Device Not found", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this.context, "Device Not found", Toast.LENGTH_LONG).show();
                 }
                 catch (ExecutionException e)
                 {
@@ -159,9 +163,9 @@ public class MainActivity extends AppCompatActivity
                 try
                 {
                     detectionSwitch = true;
-                    String answer = turnOnTask.execute("http://192.168.4.1/end_detection").get();
-                    if (answer.equals("OK"))
-                        Toast.makeText(this.context, "Detection Disabled", Toast.LENGTH_SHORT).show();
+                    String answer = task.execute("http://192.168.4.1/end_detection").get();
+                    if (answer.equals("DONE"))
+                        Toast.makeText(this.context, "Detection Disabled", Toast.LENGTH_LONG).show();
                 }
                 catch (ExecutionException e)
                 {
@@ -267,7 +271,7 @@ public class MainActivity extends AppCompatActivity
 
             if(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(action))
             {
-                Log.d(TAG, "start searching after CMIYC");
+                Log.d(TAG, "start searching after Park-Safely access-point");
                 List<ScanResult> srl = wfManager.getScanResults();
                 Log.d(TAG, "scan result list size is: " + srl.size());
 
@@ -277,21 +281,21 @@ public class MainActivity extends AppCompatActivity
                     {
                         if(sr.SSID.equals(accessPointName))
                         {
-                            Log.d(TAG, "CMIYC is found");
+                            Log.d(TAG, "Park-Safely access-point is found");
                             WifiConfiguration wfConfig = createConfig(accessPointName, accessPointPass);
                             int networkId = wfManager.addNetwork(wfConfig);
                             wfManager.disconnect();
                             wfManager.enableNetwork(networkId, true);
                             wfManager.reconnect();
                             unregisterReceiver(wfBroadcastReceiver);
-                            break;
+                            return;
                         }
 
                         Log.d(TAG, "loop number " + loopCounter++ + " pass");
                     }
 
-                    Log.d(TAG, "CMIYC is not in wifi scan area");
-                    Toast.makeText(this.context, "Car device is not in wifi scan area", Toast.LENGTH_LONG).show();
+                    Log.d(TAG, "Park-Safely access-point is not in wifi scan area");
+                    Toast.makeText(this.context, "Park-Safely access-point is not in wifi scan area", Toast.LENGTH_LONG).show();
                     unregisterReceiver(wfBroadcastReceiver);
                 }
             }

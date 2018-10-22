@@ -13,6 +13,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import java.io.File;
+import java.util.concurrent.ExecutionException;
 
 public class EditAccessPointActivity extends AppCompatActivity
 {
@@ -37,31 +38,13 @@ public class EditAccessPointActivity extends AppCompatActivity
         this.apInfo = new AccessPointInfo(this.context);
         this.fileJob = new FileJobs(this.context, this.apInfo, this.FILE_NAME);
         this.apInfo = fileJob.readJsonFile();
-        this.currentName = apInfo.getAccessPointName();
+        this.currentName = "\"" + apInfo.getAccessPointName() + "\"";
 
         if(!isConnectedToPS())
             showMessage(ERR_CONNECTION_TITLE);
     }
 
-    public void checkButton(View v)
-    {
-        getViewValues();
-        if(!confirmPasswords())
-            showMessage(ERR_PASS_TITLE);
-        else
-        {
-            this.apInfo.setAccessPointName(this.newName.toString());
-            this.apInfo.setAccessPointPass(this.newPassword.toString());
-            this.fileJob.writeJsonFile(new File(this.FILE_NAME));
-            Toast.makeText(this.context, "User Name & Password Saved Successfully", Toast.LENGTH_LONG).show();
-        }
-    }
-
-    public void cancelButton(View v)
-    {
-        Toast.makeText(this.context, "Edit Access Point Configuration Was Canceled", Toast.LENGTH_LONG).show();
-        startActivity(new Intent(EditAccessPointActivity.this, SettingsActivity.class));
-    }
+    //===========================logical functions==================================================
 
     private boolean isConnectedToPS()
     {
@@ -71,7 +54,8 @@ public class EditAccessPointActivity extends AppCompatActivity
             WifiInfo wfInfo = wfManager.getConnectionInfo();
             if (wfInfo != null)
             {
-                if (wfInfo.getSSID().equals(currentName))
+                String ssid = wfInfo.getSSID();
+                if (ssid.equals(currentName))
                     return true;
             }
         }
@@ -92,6 +76,50 @@ public class EditAccessPointActivity extends AppCompatActivity
         newName = findViewById(R.id.editText);
         newPassword = findViewById(R.id.editPass);
         confirmNewPassword = findViewById(R.id.confirmPass);
+    }
+
+    //===========================onClick functions==================================================
+
+    public void checkButton(View v)
+    {
+        getViewValues();
+        if(!confirmPasswords())
+            showMessage(ERR_PASS_TITLE);
+        else
+        {
+            this.apInfo.setAccessPointName(this.newName.toString());
+            this.apInfo.setAccessPointPass(this.newPassword.toString());
+            this.fileJob.writeJsonFile(new File(this.FILE_NAME));
+
+            ServerTask task = new ServerTask();
+            try
+            {
+                String s1 = "omri";
+                String s2 = "omri2";
+                String answer = task.execute("http://192.168.4.1/update_access_point_details", s1, s2).get();
+                if(answer.equals("DONE"))
+                    Toast.makeText(this.context, "User Name & Password Saved Successfully", Toast.LENGTH_LONG).show();
+                else
+                {
+                    Toast.makeText(this.context, "User Name & Password NOT Saved Successfully, Try Again", Toast.LENGTH_LONG).show();
+                    startActivity(new Intent(EditAccessPointActivity.this, EditAccessPointActivity.class));
+                }
+            }
+            catch (ExecutionException e)
+            {
+                e.printStackTrace();
+            }
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void cancelButton(View v)
+    {
+        Toast.makeText(this.context, "Edit Access Point Configuration Was Canceled", Toast.LENGTH_LONG).show();
+        startActivity(new Intent(EditAccessPointActivity.this, SettingsActivity.class));
     }
 
     //===========================messages function==================================================
