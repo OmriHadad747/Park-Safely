@@ -98,12 +98,12 @@ public class EditAccessPointActivity extends AppCompatActivity
 
     private void showMessage(String title)
     {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setTitle(title);
+        alert.setCancelable(false);
         if(title.equals(ERR_CONNECTION_TITLE))
         {
-            AlertDialog.Builder alert = new AlertDialog.Builder(this);
-            alert.setTitle(title);
             alert.setMessage(ERR_CONNECTION);
-            alert.setCancelable(false);
             alert.setPositiveButton("OK", new DialogInterface.OnClickListener()
             {
                 @Override
@@ -112,14 +112,10 @@ public class EditAccessPointActivity extends AppCompatActivity
                     startActivity(new Intent(EditAccessPointActivity.this, MainActivity.class));
                 }
             });
-            alert.create().show();
         }
         else if(title.equals(ERR_PASS_TITLE))
         {
-            AlertDialog.Builder alert = new AlertDialog.Builder(this);
-            alert.setTitle(title);
             alert.setMessage(ERR_PASS);
-            alert.setCancelable(false);
             alert.setPositiveButton("OK", new DialogInterface.OnClickListener()
             {
                 @Override
@@ -128,7 +124,7 @@ public class EditAccessPointActivity extends AppCompatActivity
                     startActivity(new Intent(EditAccessPointActivity.this, EditAccessPointActivity.class));
                 }
             });
-            alert.create().show();
         }
+        alert.create().show();
     }
 }
