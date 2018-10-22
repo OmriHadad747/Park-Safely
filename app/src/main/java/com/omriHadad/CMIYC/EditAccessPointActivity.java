@@ -65,7 +65,7 @@ public class EditAccessPointActivity extends AppCompatActivity
 
     private boolean confirmPasswords()
     {
-        if(newPassword.equals(confirmNewPassword))
+        if(newPassword.getText().equals(confirmNewPassword.getText()))
             return true;
 
         return false;
@@ -73,9 +73,9 @@ public class EditAccessPointActivity extends AppCompatActivity
 
     private void getViewValues()
     {
-        newName = findViewById(R.id.editText);
-        newPassword = findViewById(R.id.editPass);
-        confirmNewPassword = findViewById(R.id.confirmPass);
+        newName = (EditText)findViewById(R.id.editText);
+        newPassword = (EditText)findViewById(R.id.editPass);
+        confirmNewPassword = (EditText)findViewById(R.id.confirmPass);
     }
 
     //===========================onClick functions==================================================
