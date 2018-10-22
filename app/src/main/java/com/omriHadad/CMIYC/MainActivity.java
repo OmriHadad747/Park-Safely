@@ -3,21 +3,28 @@ package com.omriHadad.CMIYC;
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
+import android.media.Image;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,13 +42,16 @@ public class MainActivity extends AppCompatActivity
     private File file;
     private AccessPointInfo apInfo;
     private FileJobs fileJob;
+    private WifiManager wfManager ;
     private WifiBroadcastReceiver wfBroadcastReceiver;
     private String accessPointName;
     private String accessPointPass;
     boolean detectionSwitch;
+    ImageView wifi;
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
         getMenuInflater().inflate(R.menu.menu,menu);
         return super.onCreateOptionsMenu(menu);
     }
@@ -53,11 +63,15 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         this.context = getApplicationContext();
         this.detectionSwitch=true;
+        wifi = findViewById(R.id.wifi_image);
+        wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        wfBroadcastReceiver=new WifiBroadcastReceiver(wfManager, this.context);;
 
-       // android.support.v7.widget.Toolbar toolbar = findViewById(R.id.tool_bar);
-        //setSupportActionBar(toolbar);
-        //getSupportActionBar().setTitle("Park-Safely");
-        //getSupportActionBar().setSubtitle("Find How Hit You'r Vehicle");
+        android.support.v7.widget.Toolbar toolbar = findViewById(R.id.tool_bar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("Park-Safely");
+        getSupportActionBar().setSubtitle("Find How Hit You'r Vehicle");
+
 
         this.apInfo = new AccessPointInfo(this.context);
         this.fileJob = new FileJobs(this.context, this.apInfo, this.FILE_NAME);
@@ -68,13 +82,29 @@ public class MainActivity extends AppCompatActivity
             this.file = new File(path, FILE_NAME);  //create file for the first time
             this.apInfo.setFileCreated(true);
             this.apInfo.setFirstEntered(true);
+            this.accessPointName = this.apInfo.getAccessPointName();
+            this.accessPointPass = this.apInfo.getAccessPointPass();
             fileJob.writeJsonFile(this.file);
         }
+        else
         {
             this.apInfo = fileJob.readJsonFile();
             this.accessPointName = this.apInfo.getAccessPointName();
             this.accessPointPass = this.apInfo.getAccessPointPass();
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        IntentFilter intentFilter = new IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION);
+        registerReceiver(wfBroadcastReceiver,intentFilter);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unregisterReceiver(wfBroadcastReceiver);
     }
 
     //===========================logical functions==================================================
@@ -121,29 +151,49 @@ public class MainActivity extends AppCompatActivity
 
     public void wifiButtonOnClick(View v)
     {
-        WifiManager wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+
         wifiEnabling(wfManager);
         locationEnabling();
-        this.wfBroadcastReceiver = new WifiBroadcastReceiver(wfManager, this.context);
         registerReceiver(wfBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        if(!isConnectedToPS()){
+            showMessage("Failed to connect wireless access point : "+accessPointName,"A Wi-Fi connection cannot be established \nCheck if the wireless access point is turn on and connected and try again.");
+        }
+
+    }
+
+    private void showMessage(String title, String msg)
+    {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setTitle(title);
+        alert.setCancelable(false);
+        alert.setMessage(msg);
+        alert.setPositiveButton("OK", new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+
+            }
+        });
+        alert.create().show();
     }
 
     //===========================switches configuration=============================================
 
     public void configDetectionSwitch(View v)
     {
-            ServerTask turnOnTask = new ServerTask();
+            ServerTask task = new ServerTask();
 
             if (detectionSwitch)
             {
                 try
                 {
                     detectionSwitch = false;
-                    String answer = turnOnTask.execute("http://192.168.4.1/start_detection").get();
-                    if (answer.equals("OK"))
-                        Toast.makeText(this.context, "Detection Enabled", Toast.LENGTH_SHORT).show();
+                    String answer = task.execute("http://192.168.4.1/start_detection").get();
+                    if (answer.equals("DONE"))
+                        Toast.makeText(this.context, "Detection Enabled", Toast.LENGTH_LONG).show();
                     else
-                        Toast.makeText(this.context, "Device Not found", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this.context, "Device Not found", Toast.LENGTH_LONG).show();
                 }
                 catch (ExecutionException e)
                 {
@@ -159,9 +209,9 @@ public class MainActivity extends AppCompatActivity
                 try
                 {
                     detectionSwitch = true;
-                    String answer = turnOnTask.execute("http://192.168.4.1/end_detection").get();
-                    if (answer.equals("OK"))
-                        Toast.makeText(this.context, "Detection Disabled", Toast.LENGTH_SHORT).show();
+                    String answer = task.execute("http://192.168.4.1/end_detection").get();
+                    if (answer.equals("DONE"))
+                        Toast.makeText(this.context, "Detection Disabled", Toast.LENGTH_LONG).show();
                 }
                 catch (ExecutionException e)
                 {
@@ -200,6 +250,22 @@ public class MainActivity extends AppCompatActivity
             }
         }
         catch(Exception e){}
+    }
+
+    private boolean isConnectedToPS()
+    {
+        WifiManager wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        if (wfManager.isWifiEnabled())
+        {
+            WifiInfo wfInfo = wfManager.getConnectionInfo();
+            if (wfInfo != null)
+            {
+                if (wfInfo.getSSID().equals(accessPointName))
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     private void wifiEnabling(final WifiManager wfManager)
@@ -262,12 +328,36 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onReceive(Context context, Intent intent)
         {
+
+            //wifi image change listener
+            int wifiStateExtra = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE,WifiManager.WIFI_STATE_UNKNOWN);
+            switch (wifiStateExtra){
+                case WifiManager.WIFI_STATE_ENABLED:
+                    Toast.makeText(this.context, "WIFI ON", Toast.LENGTH_LONG).show();
+                    WifiInfo wfInfo = wfManager.getConnectionInfo();
+                    if (isConnectedToPS())
+                    {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            wifi.setImageDrawable(getDrawable(R.drawable.ic_wifi_24dp));
+                        }
+                    }
+                    break;
+
+                default:
+                    Toast.makeText(this.context, "WIFI OFF", Toast.LENGTH_LONG).show();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        wifi.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
+                    }
+                    break;
+
+            }
+            //end
             String action = intent.getAction();
             int loopCounter = 1;
 
             if(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(action))
             {
-                Log.d(TAG, "start searching after CMIYC");
+                Log.d(TAG, "start searching after Park-Safely access-point");
                 List<ScanResult> srl = wfManager.getScanResults();
                 Log.d(TAG, "scan result list size is: " + srl.size());
 
@@ -277,21 +367,21 @@ public class MainActivity extends AppCompatActivity
                     {
                         if(sr.SSID.equals(accessPointName))
                         {
-                            Log.d(TAG, "CMIYC is found");
+                            Log.d(TAG, "Park-Safely access-point is found");
                             WifiConfiguration wfConfig = createConfig(accessPointName, accessPointPass);
                             int networkId = wfManager.addNetwork(wfConfig);
                             wfManager.disconnect();
                             wfManager.enableNetwork(networkId, true);
                             wfManager.reconnect();
                             unregisterReceiver(wfBroadcastReceiver);
-                            break;
+                            return;
                         }
 
                         Log.d(TAG, "loop number " + loopCounter++ + " pass");
                     }
 
-                    Log.d(TAG, "CMIYC is not in wifi scan area");
-                    Toast.makeText(this.context, "Car device is not in wifi scan area", Toast.LENGTH_LONG).show();
+                    Log.d(TAG, "Park-Safely access-point is not in wifi scan area");
+                    Toast.makeText(this.context, "Park-Safely access-point is not in wifi scan area", Toast.LENGTH_LONG).show();
                     unregisterReceiver(wfBroadcastReceiver);
                 }
             }
