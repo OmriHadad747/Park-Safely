@@ -8,13 +8,14 @@
 
 //variables
 Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
-double startX, startY, currX, currY;
+double startX, startY;
+double currX, currY;
 boolean initMeasure = false;
 boolean isParking = false;
-boolean clientConnected = false;
-const char *ap_ssid = "Park-Safely-AP";
-const char *ap_password = "01234567";
-ESP8266WebServer apServer(80);
+boolean isClientConnected = false;
+const char *accessPointName = "Park-Safely AP";
+const char *accessPointPass= "01234567";
+ESP8266WebServer accessPointServer(80);
 
 //Set the range to whatever is appropriate for your project 
 void chooseRange(int range)
@@ -48,31 +49,46 @@ void chooseRange(int range)
   }
 }
 
+void updateAccessPointDetails()
+{
+  int numOfArgs = accessPointServer.args();
+  String firstArg, secondArg;
+  if(numOfArgs == 2)
+  {
+    firstArg = accessPointServer.arg(0) + "\n";
+    Serial.println(firstArg);
+    secondArg = accessPointServer.arg(1) + "\n";
+    Serial.println(secondArg);
+  }
+
+  accessPointServer.send(200, "text/html", "DONE");
+}
+
 void startDetection()
 {
   isParking = true;
-  apServer.send(200, "text/html", "OK");
-  Serial.println("start detection");
+  accessPointServer.send(200, "text/html", "DONE");
+  Serial.println("Detection started");
 }
 
 void endDetection()
 {
   isParking = false;
-  apServer.send(200, "text/html", "OK");
-  Serial.println("end detection");
+  accessPointServer.send(200, "text/html", "DONE");
+  Serial.println("Detection ended");
 }
 
-void loadServer()
+void loadIncomingClient()
 {
-  WiFiClient serverConnection = apServer.client();
-  if (serverConnection)
+  WiFiClient incomingClient = accessPointServer.client();
+  if (incomingClient)
   {
-    clientConnected = true;
+    isClientConnected = true;
     Serial.println("New client arrived");
   }
   else
   {
-    clientConnected = false;
+    isClientConnected = false;
     Serial.println("The client leave the network");
   }
 }
@@ -123,11 +139,12 @@ void setup(void)
   Serial.begin(9600);
 
   //Initialise the access point
-  WiFi.softAP(ap_ssid, ap_password);
-  apServer.on("/start_detection", startDetection);
-  apServer.on("/end_detection", endDetection);
-  apServer.on("/send_to_app", sendToApp); 
-  apServer.begin();
+  WiFi.softAP(accessPointName, accessPointPass);
+  accessPointServer.on("/start_detection", startDetection);
+  accessPointServer.on("/end_detection", endDetection);
+  accessPointServer.on("/update_access_point_details", updateAccessPointDetails);
+  /*apServer.on("/send_to_app", sendToApp);*/
+  accessPointServer.begin();
 
   //Initialise the sensor
   if(!accel.begin())
@@ -137,19 +154,19 @@ void setup(void)
   }
   chooseRange(16);
   
-  Serial.println("setup done");
+  Serial.println("Setup is done");
 }
 
 void loop(void) 
 {  
-  apServer.handleClient();
-  loadServer();
+  accessPointServer.handleClient();
+  loadIncomingClient();
   
-  if(clientConnected && isParking)
+  if(isClientConnected && isParking)
     runDetection();
 
-  //dont remove
-  /*if(clientConnected)
+  /*dont remove
+  if(clientConnected)
   {
     
     while(Serial.available()>0)
@@ -159,8 +176,8 @@ void loop(void)
       delay(5);
       Serial.write('x');
     }
-  }*/
-  //yossi the gay
+  }
+  yossi the gay*/
       
   delay(500);
 }

@@ -18,32 +18,7 @@
 
     <color
         name="black">#403A39
-    </color>
-
-    <color
-        name="color_accent">#E27065
     </color>-->
-
-    <!--<color
-        name="light_gray">#C2C2C2
-    </color>
-
-    <color
-        name="deep_purple">#7c4dff
-    </color>
-
-    <color
-        name="yellow">#FFB300
-    </color>
-
-    <color
-        name="text_color_secondary">#403A39
-    </color>
-
-    <color
-        name="dark_grey">#FF6C6C6C
-    </color>-->
-
 
     <!-- wish style color set -->
     <color name="primary_blue">#32B7EC</color>
