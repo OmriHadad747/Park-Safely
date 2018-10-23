@@ -65,9 +65,7 @@ public class EditAccessPointActivity extends AppCompatActivity
 
     private boolean confirmPasswords()
     {
-        String pass = this.newPassword.getText().toString();
-        String confirmPass = this.confirmNewPassword.getText().toString();
-        if(pass.equals(confirmPass))
+        if(this.newPassword.getText().toString().equals(this.confirmNewPassword.getText().toString()))
             return true;
 
         return false;
@@ -134,6 +132,7 @@ public class EditAccessPointActivity extends AppCompatActivity
         if(title.equals(ERR_CONNECTION_TITLE))
         {
             alert.setMessage(ERR_CONNECTION);
+
             alert.setPositiveButton("OK", new DialogInterface.OnClickListener()
             {
                 @Override
