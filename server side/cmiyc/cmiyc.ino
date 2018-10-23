@@ -80,16 +80,18 @@ void endDetection()
 
 void loadIncomingClient()
 {
-  WiFiClient incomingClient = accessPointServer.client();
-  if (incomingClient)
+  delay(10000);
+
+  if (accessPointServer.client())
   {
     isClientConnected = true;
-    Serial.println("New client arrived");
+    Serial.println("client connected");
   }
   else
   {
-    isClientConnected = false;
-    Serial.println("The client leave the network");
+    if(isClientConnected)
+      isClientConnected = false;
+    Serial.println("no client connected");
   }
 }
 

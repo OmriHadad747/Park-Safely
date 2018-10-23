@@ -65,7 +65,9 @@ public class EditAccessPointActivity extends AppCompatActivity
 
     private boolean confirmPasswords()
     {
-        if(newPassword.getText().equals(confirmNewPassword.getText()))
+        String pass = this.newPassword.getText().toString();
+        String confirmPass = this.confirmNewPassword.getText().toString();
+        if(pass.equals(confirmPass))
             return true;
 
         return false;
@@ -87,8 +89,8 @@ public class EditAccessPointActivity extends AppCompatActivity
             showMessage(ERR_PASS_TITLE);
         else
         {
-            this.apInfo.setAccessPointName(this.newName.toString());
-            this.apInfo.setAccessPointPass(this.newPassword.toString());
+            this.apInfo.setAccessPointName(this.newName.getText().toString());
+            this.apInfo.setAccessPointPass(this.newPassword.getText().toString());
             this.fileJob.writeJsonFile(new File(this.FILE_NAME));
 
             ServerTask task = new ServerTask();
