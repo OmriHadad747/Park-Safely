@@ -134,26 +134,29 @@ public class EditAccessPointActivity extends AppCompatActivity
         alert.setCancelable(false);
         if(title.equals(ERR_CONNECTION_TITLE))
         {
+            final Intent goMainIntent = new Intent(EditAccessPointActivity.this, MainActivity.class);
+            goMainIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             alert.setMessage(ERR_CONNECTION);
-
             alert.setPositiveButton("OK", new DialogInterface.OnClickListener()
             {
                 @Override
                 public void onClick(DialogInterface dialog, int which)
                 {
-                    startActivity(new Intent(EditAccessPointActivity.this, MainActivity.class));
+                    startActivity(goMainIntent);
                 }
             });
         }
         else if(title.equals(ERR_PASS_TITLE))
         {
+            final Intent goEditAccessPointIntent = new Intent(EditAccessPointActivity.this, EditAccessPointActivity.class);
+            goEditAccessPointIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             alert.setMessage(ERR_PASS);
             alert.setPositiveButton("OK", new DialogInterface.OnClickListener()
             {
                 @Override
                 public void onClick(DialogInterface dialog, int which)
                 {
-                    startActivity(new Intent(EditAccessPointActivity.this, EditAccessPointActivity.class));
+                    startActivity(goEditAccessPointIntent);
                 }
             });
         }
