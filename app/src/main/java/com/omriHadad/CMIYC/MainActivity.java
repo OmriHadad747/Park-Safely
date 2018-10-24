@@ -126,12 +126,11 @@ public class MainActivity extends AppCompatActivity
         return false;
     }
 
-    private void wifiEnabling(final WifiManager wfManager)
+    private void wifiEnabling()
     {
-        if(!wfManager.isWifiEnabled())
+        if(!this.wfManager.isWifiEnabled())
         {
-            Log.d(TAG, "turns on the wifi");
-            wfManager.setWifiEnabled(true);
+            this.wfManager.setWifiEnabled(true);
             /*AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
             builder.setMessage("You have to enable your WIFI before continue");
@@ -150,6 +149,11 @@ public class MainActivity extends AppCompatActivity
             AlertDialog alert = builder.create();
             alert.show();*/
         }
+        else
+        {
+            this.wfManager.setWifiEnabled(false);
+            this.wfManager.setWifiEnabled(true);
+        }
     }
 
     private void locationEnabling()
@@ -157,12 +161,8 @@ public class MainActivity extends AppCompatActivity
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
                 != (PackageManager.PERMISSION_GRANTED))
         {
-            Log.d(TAG, "location permission is not granted");
-            Log.d(TAG, "request location permission");
             ActivityCompat.requestPermissions(this, permissions, 123);
         }
-        else
-            Log.d(TAG, "location permissions is granted");
 
         LocationManager lm = (LocationManager)this.context.getSystemService(Context.LOCATION_SERVICE);
         try
@@ -171,8 +171,6 @@ public class MainActivity extends AppCompatActivity
                 Log.d(TAG, "location is enabled");
             else
             {
-                Log.d(TAG, "location is disabled");
-                Log.d(TAG, "request for enable location");
                 Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 startActivity(myIntent);
             }
@@ -229,8 +227,8 @@ public class MainActivity extends AppCompatActivity
     {
         if(!this.connectionFlag)
         {
-            wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-            wifiEnabling(wfManager);
+            this.wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+            wifiEnabling();
             locationEnabling();
             wfBroadcastReceiver = new WifiBroadcastReceiver(wfManager, this.context);
             registerReceiver(wfBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
@@ -256,7 +254,7 @@ public class MainActivity extends AppCompatActivity
                 {
                     detectionSwitch = false;
                     String answer = task.execute("http://192.168.4.1/start_detection").get();
-                    if (answer.equals("DONE"))
+                    if (answer.equals("DONE\n"))
                         Toast.makeText(this.context, "Detection Enabled", Toast.LENGTH_LONG).show();
                     else
                         Toast.makeText(this.context, "Device Not found", Toast.LENGTH_LONG).show();
@@ -276,7 +274,7 @@ public class MainActivity extends AppCompatActivity
                 {
                     detectionSwitch = true;
                     String answer = task.execute("http://192.168.4.1/end_detection").get();
-                    if (answer.equals("DONE"))
+                    if (answer.equals("DONE\n"))
                         Toast.makeText(this.context, "Detection Disabled", Toast.LENGTH_LONG).show();
                 }
                 catch (ExecutionException e)
@@ -350,11 +348,12 @@ public class MainActivity extends AppCompatActivity
                             }
 
                             registerReceiver(wfBroadcastReceiver, new IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION));
+                            Toast.makeText(context, "Connected To Park-Safely", Toast.LENGTH_LONG);
                             return;
                         }
                     }
 
-                    Toast.makeText(this.context, "Park-Safely AP is not found in wifi scan area, try again", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this.context, "Park-Safely AP Is Not Found In Wifi Scan Area, Try Again", Toast.LENGTH_LONG).show();
                     unregisterReceiver(wfBroadcastReceiver);
                 }
             }

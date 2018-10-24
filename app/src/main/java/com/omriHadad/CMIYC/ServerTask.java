@@ -96,8 +96,6 @@ public class ServerTask extends AsyncTask<String, Void, String>
                 instream.close();
                 return result;
             }
-
-
         }
         catch (Exception e)
         {

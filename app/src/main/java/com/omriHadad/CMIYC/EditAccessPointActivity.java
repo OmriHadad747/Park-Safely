@@ -98,7 +98,10 @@ public class EditAccessPointActivity extends AppCompatActivity
                 String s2 = "omri2";
                 String answer = task.execute("http://192.168.4.1/update_access_point_details", s1, s2).get();
                 if(answer.equals("DONE\n"))
+                {
                     Toast.makeText(this.context, "User Name & Password Saved Successfully", Toast.LENGTH_LONG).show();
+                    startActivity(new Intent(EditAccessPointActivity.this, MainActivity.class));
+                }
                 else
                 {
                     Toast.makeText(this.context, "User Name & Password NOT Saved Successfully, Try Again", Toast.LENGTH_LONG).show();

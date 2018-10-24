@@ -58,16 +58,12 @@ void setIsClientConnected()
 
 void updateAccessPointDetails()
 {
-  int numOfArgs = accessPointServer.args();
+  Serial.println("-->updateAccessPointDetails() called"); 
   String firstArg, secondArg;
-  if(numOfArgs == 2)
-  {
-    firstArg = accessPointServer.arg(0) + "\n";
-    Serial.println(firstArg);
-    secondArg = accessPointServer.arg(1) + "\n";
-    Serial.println(secondArg);
-  }
-
+  firstArg = accessPointServer.arg(0);
+  Serial.println(firstArg);
+  secondArg = accessPointServer.arg(1);
+  Serial.println(secondArg);
   accessPointServer.send(200, "text/html", "DONE");
 }
 
