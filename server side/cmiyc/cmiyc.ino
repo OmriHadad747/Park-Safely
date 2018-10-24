@@ -49,6 +49,13 @@ void chooseRange(int range)
   }
 }
 
+void setIsClientConnected()
+{
+  isClientConnected = true;
+  Serial.println("client connected");
+  accessPointServer.send(200, "text/html", "DONE");
+}
+
 void updateAccessPointDetails()
 {
   int numOfArgs = accessPointServer.args();
@@ -78,22 +85,10 @@ void endDetection()
   Serial.println("Detection ended");
 }
 
-void loadIncomingClient()
-{
-  delay(10000);
-
-  if (accessPointServer.client())
-  {
-    isClientConnected = true;
-    Serial.println("client connected");
-  }
-  else
-  {
-    if(isClientConnected)
-      isClientConnected = false;
-    Serial.println("no client connected");
-  }
-}
+//void loadIncomingClient()
+//{
+//  WifiClient client = accessPointServer.client()
+//}
 
 void printAccelDate(sensors_event_t event)
 {
@@ -145,7 +140,7 @@ void setup(void)
   accessPointServer.on("/start_detection", startDetection);
   accessPointServer.on("/end_detection", endDetection);
   accessPointServer.on("/update_access_point_details", updateAccessPointDetails);
-  /*apServer.on("/send_to_app", sendToApp);*/
+  accessPointServer.on("/set_is_client_connected", setIsClientConnected);
   accessPointServer.begin();
 
   //Initialise the sensor
@@ -155,14 +150,19 @@ void setup(void)
     while(1);
   }
   chooseRange(16);
-  
+
+  delay(3000);
   Serial.println("Setup is done");
+  if(!isClientConnected)
+  {
+    Serial.println("no client connected");
+  }
 }
 
 void loop(void) 
 {  
   accessPointServer.handleClient();
-  loadIncomingClient();
+  //loadIncomingClient();
   
   if(isClientConnected && isParking)
     runDetection();

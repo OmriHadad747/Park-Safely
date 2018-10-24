@@ -44,6 +44,8 @@ public class MainActivity extends AppCompatActivity
     private FileJobs fileJob;
     private WifiManager wfManager ;
     private WifiBroadcastReceiver wfBroadcastReceiver;
+    private boolean connectionFlag = false;
+    private int networkId;
     private String accessPointName;
     private String accessPointPass;
     private boolean detectionSwitch = true;
@@ -150,11 +152,39 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private WifiConfiguration createConfig(String ap_name, String ap_pass)
+    private void locationEnabling()
+    {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != (PackageManager.PERMISSION_GRANTED))
+        {
+            Log.d(TAG, "location permission is not granted");
+            Log.d(TAG, "request location permission");
+            ActivityCompat.requestPermissions(this, permissions, 123);
+        }
+        else
+            Log.d(TAG, "location permissions is granted");
+
+        LocationManager lm = (LocationManager)this.context.getSystemService(Context.LOCATION_SERVICE);
+        try
+        {
+            if(lm.isProviderEnabled(LocationManager.GPS_PROVIDER))
+                Log.d(TAG, "location is enabled");
+            else
+            {
+                Log.d(TAG, "location is disabled");
+                Log.d(TAG, "request for enable location");
+                Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(myIntent);
+            }
+        }
+        catch(Exception e){}
+    }
+
+    private WifiConfiguration createConfig()
     {
         WifiConfiguration wfConfig = new WifiConfiguration();
-        wfConfig.SSID = String.format("\"%s\"", ap_name);
-        wfConfig.preSharedKey = String.format("\"%s\"", ap_pass);
+        wfConfig.SSID = String.format("\"%s\"", this.accessPointName);
+        wfConfig.preSharedKey = String.format("\"%s\"", this.accessPointPass);
         wfConfig.hiddenSSID = true;
         wfConfig.status = WifiConfiguration.Status.ENABLED;
         wfConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
@@ -164,6 +194,23 @@ public class MainActivity extends AppCompatActivity
         wfConfig.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
 
         return wfConfig;
+    }
+
+    private boolean isConnectedToPS()
+    {
+        if (this.wfManager.isWifiEnabled())
+        {
+            WifiInfo wfInfo = this.wfManager.getConnectionInfo();
+            if (wfInfo != null)
+            {
+                String ssid = wfInfo.getSSID().toString();
+                String tmpAccessPointName = "\"" + this.accessPointName + "\"";
+                if (ssid.equals(tmpAccessPointName))
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     //===========================onClick functions==================================================
@@ -180,28 +227,21 @@ public class MainActivity extends AppCompatActivity
 
     public void wifiButtonOnClick(View v)
     {
-        wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        wfBroadcastReceiver = new WifiBroadcastReceiver(wfManager, this.context);
-        wifiEnabling(wfManager);
-        locationEnabling();
-        registerReceiver(wfBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-    }
-
-    private void showMessage(String title, String msg)
-    {
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setTitle(title);
-        alert.setCancelable(false);
-        alert.setMessage(msg);
-        alert.setPositiveButton("OK", new DialogInterface.OnClickListener()
+        if(!this.connectionFlag)
         {
-            @Override
-            public void onClick(DialogInterface dialog, int which)
-            {
-
-            }
-        });
-        alert.create().show();
+            wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+            wifiEnabling(wfManager);
+            locationEnabling();
+            wfBroadcastReceiver = new WifiBroadcastReceiver(wfManager, this.context);
+            registerReceiver(wfBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        }
+        else
+        {
+            wfManager.disconnect();
+            wfManager.disableNetwork(networkId);
+            this.connectionFlag = false;
+            registerReceiver(wfBroadcastReceiver, new IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION));
+        }
     }
 
     //===========================switches configuration=============================================
@@ -250,50 +290,6 @@ public class MainActivity extends AppCompatActivity
             }
     }
 
-    private void locationEnabling()
-    {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-                != (PackageManager.PERMISSION_GRANTED))
-        {
-            Log.d(TAG, "location permission is not granted");
-            Log.d(TAG, "request location permission");
-            ActivityCompat.requestPermissions(this, permissions, 123);
-        }
-        else
-            Log.d(TAG, "location permissions is granted");
-
-        LocationManager lm = (LocationManager)this.context.getSystemService(Context.LOCATION_SERVICE);
-        try
-        {
-            if(lm.isProviderEnabled(LocationManager.GPS_PROVIDER))
-                Log.d(TAG, "location is enabled");
-            else
-            {
-                Log.d(TAG, "location is disabled");
-                Log.d(TAG, "request for enable location");
-                Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                startActivity(myIntent);
-            }
-        }
-        catch(Exception e){}
-    }
-
-    private boolean isConnectedToPS()
-    {
-        WifiManager wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        if (wfManager.isWifiEnabled())
-        {
-            WifiInfo wfInfo = wfManager.getConnectionInfo();
-            if (wfInfo != null)
-            {
-                if (wfInfo.getSSID().equals(accessPointName))
-                    return true;
-            }
-        }
-
-        return false;
-    }
-
     //===========================broadcast receiver definition======================================
 
     public class WifiBroadcastReceiver extends BroadcastReceiver
@@ -311,31 +307,54 @@ public class MainActivity extends AppCompatActivity
         public void onReceive(Context context, Intent intent)
         {
             String action = intent.getAction();
-            int loopCounter = 1;
 
             if(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(action))
             {
-                Log.d(TAG, "start searching after Park-Safely access-point");
                 List<ScanResult> srl = wfManager.getScanResults();
-                Log.d(TAG, "scan result list size is: " + srl.size());
                 if(srl.size() != 0)
                 {
                     for(ScanResult sr : srl)
                     {
-                        if(sr.SSID.equals(accessPointName))
+                        if(sr.SSID.equals(accessPointName))  //if find the desirable access point
                         {
-                            WifiConfiguration wfConfig = createConfig(accessPointName, accessPointPass);
-                            int networkId = wfManager.addNetwork(wfConfig);
+                            WifiConfiguration wfConfig = createConfig();
+                            networkId = wfManager.addNetwork(wfConfig);
                             wfManager.disconnect();
                             wfManager.enableNetwork(networkId, true);
                             wfManager.reconnect();
-                            unregisterReceiver(wfBroadcastReceiver);
+                            unregisterReceiver(wfBroadcastReceiver);  //remove scan result event listener
+
+                            while(!connectionFlag)  //system update on new connection
+                            {
+                                if(isConnectedToPS())
+                                {
+                                    ServerTask task = new ServerTask();
+                                    try
+                                    {
+                                        String answer = task.execute("http://192.168.4.1/set_is_client_connected").get();
+                                        if(answer.equals("DONE\n"))
+                                            connectionFlag = true;
+                                        else
+                                            continue;
+                                    }
+                                    catch (ExecutionException e)
+                                    {
+                                        e.printStackTrace();
+                                    }
+                                    catch (InterruptedException e)
+                                    {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                else continue;
+                            }
+
                             registerReceiver(wfBroadcastReceiver, new IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION));
                             return;
                         }
                     }
 
-                    showMessage("Failed to connect wireless access point : "+accessPointName,"A Wi-Fi connection cannot be established \nCheck if the wireless access point is turn on and connected and try again.");
+                    Toast.makeText(this.context, "Park-Safely AP is not found in wifi scan area, try again", Toast.LENGTH_LONG).show();
                     unregisterReceiver(wfBroadcastReceiver);
                 }
             }
@@ -351,7 +370,6 @@ public class MainActivity extends AppCompatActivity
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                         wifi.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
                 }
-
                 unregisterReceiver(wfBroadcastReceiver);
             }
         }

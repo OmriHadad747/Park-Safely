@@ -8,21 +8,22 @@ import android.view.View;
 
 public class SettingsActivity extends AppCompatActivity
 {
+    private Toolbar toolbar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        Toolbar toolbar = findViewById(R.id.tool_bar);
-        //setSupportActionBar(toolbar);
-        //getSupportActionBar().setTitle("Settings");
+        this.toolbar = findViewById(R.id.tool_bar);
     }
 
     public void editApButtonOnClick(View v)
     {
         startActivity(new Intent(SettingsActivity.this, EditAccessPointActivity.class));
     }
+
     public void calibrationOnClick(View v)
     {
         startActivity(new Intent(SettingsActivity.this, CalibrationActivity.class));
