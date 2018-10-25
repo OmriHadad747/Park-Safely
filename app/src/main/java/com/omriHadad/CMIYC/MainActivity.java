@@ -192,27 +192,10 @@ public class MainActivity extends AppCompatActivity
         return wfConfig;
     }
 
-    private boolean isConnectedToPS()
-    {
-        if (this.wfManager.isWifiEnabled())
-        {
-            WifiInfo wfInfo = this.wfManager.getConnectionInfo();
-            if (wfInfo != null)
-            {
-                String ssid = wfInfo.getSSID().toString();
-                String tmpAccessPointName = "\"" + this.accessPointName + "\"";
-                if (ssid.equals(tmpAccessPointName))
-                    return true;
-            }
-        }
-
-        return false;
-    }
-
     private void setWifiImage()
     {
         this.wifiImage = findViewById(R.id.wifi_image);
-        if(isConnectedToPS())
+        if(apInfo.isConnectedToPS(this.wfManager))
         {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 this.wifiImage.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
@@ -334,15 +317,15 @@ public class MainActivity extends AppCompatActivity
                         if(sr.SSID.equals(accessPointName))  //if find the desirable access point
                         {
                             WifiConfiguration wfConfig = createConfig();
-                            networkId = wfManager.addNetwork(wfConfig);
-                            wfManager.disconnect();
-                            wfManager.enableNetwork(networkId, true);
-                            wfManager.reconnect();
+                            networkId = this.wfManager.addNetwork(wfConfig);
+                            this.wfManager.disconnect();
+                            this.wfManager.enableNetwork(networkId, true);
+                            this.wfManager.reconnect();
                             unregisterReceiver(wfBroadcastReceiver);  //remove scan result event listener
 
                             while(!connectionFlag)  //system update on new connection
                             {
-                                if(isConnectedToPS())
+                                if(apInfo.isConnectedToPS(this.wfManager))
                                 {
                                     ServerTask task = new ServerTask();
                                     try
@@ -377,13 +360,14 @@ public class MainActivity extends AppCompatActivity
             }
             else if(WifiManager.WIFI_STATE_CHANGED_ACTION.equals(action))
             {
-                if (isConnectedToPS())
+                if (apInfo.isConnectedToPS(this.wfManager))
                 {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                         wifiImage.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
                 }
                 else
                 {
+                    connectionFlag = false;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                         wifiImage.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
                 }

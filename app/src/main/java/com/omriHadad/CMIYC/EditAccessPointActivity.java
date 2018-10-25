@@ -23,10 +23,10 @@ public class EditAccessPointActivity extends AppCompatActivity
     final static private String ERR_PASS_TITLE = "Passwords Was Wrong";
     final static private String FILE_NAME = "json_file.txt";
     private Context context;
+    private WifiManager wfManager;
     private FileJobs fileJob;
     private AccessPointInfo apInfo;
     private EditText newName, newPassword, confirmNewPassword;
-    private String currentName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -35,33 +35,16 @@ public class EditAccessPointActivity extends AppCompatActivity
         setContentView(R.layout.activity_edit_access_point);
         context = getApplicationContext();
 
+        this.wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         this.apInfo = new AccessPointInfo(this.context);
         this.fileJob = new FileJobs(this.context, this.apInfo, this.FILE_NAME);
         this.apInfo = fileJob.readJsonFile();
-        this.currentName = "\"" + apInfo.getAccessPointName() + "\"";
 
-        if(!isConnectedToPS())
+        if(apInfo.isConnectedToPS(wfManager))
             showMessage(ERR_CONNECTION_TITLE);
     }
 
     //===========================logical functions==================================================
-
-    private boolean isConnectedToPS()
-    {
-        WifiManager wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        if (wfManager.isWifiEnabled())
-        {
-            WifiInfo wfInfo = wfManager.getConnectionInfo();
-            if (wfInfo != null)
-            {
-                String ssid = wfInfo.getSSID();
-                if (ssid.equals(currentName))
-                    return true;
-            }
-        }
-
-        return false;
-    }
 
     private boolean confirmPasswords()
     {

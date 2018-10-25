@@ -1,6 +1,8 @@
 package com.omriHadad.CMIYC;
 
 import android.content.Context;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 
 public class AccessPointInfo
 {
@@ -43,5 +45,22 @@ public class AccessPointInfo
     public void setAccessPointPass(String accessPointPass)
     {
         this.accessPointPass = accessPointPass;
+    }
+
+    public boolean isConnectedToPS(WifiManager wfManager)
+    {
+        if (wfManager.isWifiEnabled())
+        {
+            WifiInfo wfInfo = wfManager.getConnectionInfo();
+            if (wfInfo != null)
+            {
+                String ssid = wfInfo.getSSID().toString();
+                String tmpAccessPointName = "\"" + this.accessPointName + "\"";
+                if (ssid.equals(tmpAccessPointName))
+                    return true;
+            }
+        }
+
+        return false;
     }
 }
