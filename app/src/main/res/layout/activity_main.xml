@@ -77,10 +77,10 @@
                     android:padding="10dp"/>
 
                 <TextView
+                    android:id="@+id/wifi_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
-                    android:text="Connect Via WiFi"
                     android:textStyle="bold"
                     android:textColor="@color/text_color_primary_bg"/>
 

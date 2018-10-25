@@ -21,6 +21,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,8 +46,6 @@ public class MainActivity extends AppCompatActivity
     private String accessPointName;
     private String accessPointPass;
     private boolean detectionSwitch = true;
-    private ImageView wifiImage;
-    private android.support.v7.widget.Toolbar toolbar;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -194,22 +193,30 @@ public class MainActivity extends AppCompatActivity
 
     private void setWifiImage()
     {
-        this.wifiImage = findViewById(R.id.wifi_image);
-        if(apInfo.isConnectedToPS(this.wfManager))
+        ImageView wifiImg = findViewById(R.id.wifi_image);
+        TextView wifiText = findViewById(R.id.wifi_text);
+
+        if(this.apInfo.isConnectedToPS(this.wfManager))
         {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                this.wifiImage.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
+                wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
+
+            wifiText.setText("Tap To Disconnect");
         }
         else
         {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                this.wifiImage.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
+                wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
+
+            wifiText.setText("Tap To Connect");
         }
     }
 
     private void setToolbar()
     {
-        this.toolbar = findViewById(R.id.tool_bar);
+        android.support.v7.widget.Toolbar toolbar;
+
+        toolbar = findViewById(R.id.tool_bar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("Park-Safely");
     }
@@ -360,16 +367,27 @@ public class MainActivity extends AppCompatActivity
             }
             else if(WifiManager.WIFI_STATE_CHANGED_ACTION.equals(action))
             {
-                if (apInfo.isConnectedToPS(this.wfManager))
+                if(connectionFlag)
                 {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                        wifiImage.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
+                    {
+                        ImageView wifiImg = findViewById(R.id.wifi_image);
+                        wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
+                    }
+
+                    TextView wifiText = findViewById(R.id.wifi_text);
+                    wifiText.setText("Tap To Disconnect");
                 }
                 else
                 {
-                    connectionFlag = false;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                        wifiImage.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
+                    {
+                        ImageView wifiImg = findViewById(R.id.wifi_image);
+                        wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
+                    }
+
+                    TextView wifiText = findViewById(R.id.wifi_text);
+                    wifiText.setText("Tap To Connect");
                 }
                 unregisterReceiver(wfBroadcastReceiver);
             }

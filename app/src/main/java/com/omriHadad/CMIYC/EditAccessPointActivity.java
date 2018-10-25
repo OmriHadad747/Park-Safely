@@ -40,7 +40,7 @@ public class EditAccessPointActivity extends AppCompatActivity
         this.fileJob = new FileJobs(this.context, this.apInfo, this.FILE_NAME);
         this.apInfo = fileJob.readJsonFile();
 
-        if(apInfo.isConnectedToPS(wfManager))
+        if(!apInfo.isConnectedToPS(wfManager))
             showMessage(ERR_CONNECTION_TITLE);
     }
 
