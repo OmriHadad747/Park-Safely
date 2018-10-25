@@ -74,8 +74,7 @@
                     android:layout_width="64dp"
                     android:layout_height="64dp"
                     android:background="@drawable/circle_background"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_wifi_off" />
+                    android:padding="10dp"/>
 
                 <TextView
                     android:layout_width="wrap_content"

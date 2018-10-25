@@ -60,14 +60,18 @@ public class MainActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //initialize important variables
         this.context = getApplicationContext();
-        this.wifiImage = findViewById(R.id.wifi_image);
-        this.toolbar = findViewById(R.id.tool_bar);
+        this.wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        wfBroadcastReceiver = new WifiBroadcastReceiver(wfManager, this.context);
 
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("Park-Safely");
-
+        //read JSON file to get access point name & password
         fileHandler();
+        //set Images depends on wifi connection
+        setWifiImage();
+        //set toolbar name
+        setToolbar();
     }
 
     //===========================logical functions==================================================
@@ -163,9 +167,7 @@ public class MainActivity extends AppCompatActivity
         LocationManager lm = (LocationManager)this.context.getSystemService(Context.LOCATION_SERVICE);
         try
         {
-            if(lm.isProviderEnabled(LocationManager.GPS_PROVIDER))
-                Log.d(TAG, "location is enabled");
-            else
+            if(!lm.isProviderEnabled(LocationManager.GPS_PROVIDER))
             {
                 Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 startActivity(myIntent);
@@ -207,6 +209,28 @@ public class MainActivity extends AppCompatActivity
         return false;
     }
 
+    private void setWifiImage()
+    {
+        this.wifiImage = findViewById(R.id.wifi_image);
+        if(isConnectedToPS())
+        {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                this.wifiImage.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
+        }
+        else
+        {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                this.wifiImage.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
+        }
+    }
+
+    private void setToolbar()
+    {
+        this.toolbar = findViewById(R.id.tool_bar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("Park-Safely");
+    }
+
     //===========================onClick functions==================================================
 
     public void photoGalleryButtonOnClick(View v)
@@ -223,10 +247,8 @@ public class MainActivity extends AppCompatActivity
     {
         if(!this.connectionFlag)
         {
-            this.wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
             wifiEnabling();
             locationEnabling();
-            wfBroadcastReceiver = new WifiBroadcastReceiver(wfManager, this.context);
             registerReceiver(wfBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         }
         else
