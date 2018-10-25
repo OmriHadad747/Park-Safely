@@ -41,7 +41,7 @@ public class ImageGallery extends AppCompatActivity
         if(adapter.images==null || adapter.getCount()==0)
         {
             empty.setVisibility(View.VISIBLE);
-            empty.setImageDrawable(getResources().getDrawable(R.drawable.ic_photo_library_black_24dp));
+            empty.setImageDrawable(getResources().getDrawable(R.drawable.ic_photo_library));
             textempty.setVisibility(View.VISIBLE);
 
         }

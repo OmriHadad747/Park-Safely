@@ -35,7 +35,7 @@
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/ic_edit_24dp"
+                        android:src="@drawable/ic_edit"
                         android:paddingLeft="5dp"/>
 
                     <TextView
@@ -51,7 +51,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentRight="true"
-                        android:src="@drawable/ic_arrow_right_24dp" />
+                        android:src="@drawable/ic_arrow_right" />
 
                 </RelativeLayout>
 
@@ -81,7 +81,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:paddingLeft="5dp"
-                        android:src="@drawable/ic_location_24dp"/>
+                        android:src="@drawable/ic_location"/>
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -96,7 +96,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentRight="true"
-                        android:src="@drawable/ic_arrow_right_24dp" />
+                        android:src="@drawable/ic_arrow_right" />
 
                 </RelativeLayout>
 

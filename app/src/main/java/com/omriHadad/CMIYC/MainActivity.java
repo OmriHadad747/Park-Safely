@@ -3,13 +3,10 @@ package com.omriHadad.CMIYC;
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
-import android.media.Image;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
@@ -18,7 +15,6 @@ import android.os.Build;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -49,7 +45,7 @@ public class MainActivity extends AppCompatActivity
     private String accessPointName;
     private String accessPointPass;
     private boolean detectionSwitch = true;
-    private ImageView wifi;
+    private ImageView wifiImage;
     private android.support.v7.widget.Toolbar toolbar;
 
     @Override
@@ -65,7 +61,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         this.context = getApplicationContext();
-        this.wifi = findViewById(R.id.wifi_image);
+        this.wifiImage = findViewById(R.id.wifi_image);
         this.toolbar = findViewById(R.id.tool_bar);
 
         setSupportActionBar(toolbar);
@@ -362,12 +358,12 @@ public class MainActivity extends AppCompatActivity
                 if (isConnectedToPS())
                 {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                        wifi.setImageDrawable(getDrawable(R.drawable.ic_wifi_24dp));
+                        wifiImage.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
                 }
                 else
                 {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                        wifi.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
+                        wifiImage.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
                 }
                 unregisterReceiver(wfBroadcastReceiver);
             }

@@ -23,7 +23,7 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:srcCompat="@drawable/ic_account_circle_24dp"/>
+                app:srcCompat="@drawable/ic_account_circle"/>
 
         </LinearLayout>
 
@@ -40,7 +40,7 @@
                     android:ems="10"
                     android:selectAllOnFocus="false"
                     android:singleLine="false"
-                    android:drawableLeft="@drawable/ic_edit_24dp"
+                    android:drawableLeft="@drawable/ic_edit"
                     android:hint="Enter New Name"
                     android:layout_margin="5dp"
                     android:textColor="@color/text_black"
@@ -54,7 +54,7 @@
                     android:ems="10"
                     android:selectAllOnFocus="false"
                     android:singleLine="false"
-                    android:drawableLeft="@drawable/ic_lock_outline_black_24dp"
+                    android:drawableLeft="@drawable/ic_lock"
                     android:background="@drawable/text_box"
                     android:hint="Enter New Password"
                     android:drawablePadding="5dp"
@@ -67,7 +67,7 @@
                     android:ems="10"
                     android:selectAllOnFocus="false"
                     android:singleLine="false"
-                    android:drawableLeft="@drawable/ic_lock_outline_black_24dp"
+                    android:drawableLeft="@drawable/ic_lock"
                     android:drawablePadding="5dp"
                     android:hint="Confirm New Password"
                     android:background="@drawable/text_box"
@@ -84,7 +84,7 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/ic_cancel_24dp"
+                    app:srcCompat="@drawable/ic_cancel"
                     android:layout_marginRight="20dp"
                     android:clickable="true"
                     android:onClick="cancelButton"
@@ -94,7 +94,7 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/ic_check_circle_24dp"
+                    app:srcCompat="@drawable/ic_check"
                     android:layout_marginLeft="20dp"
                     android:clickable="true"
                     android:onClick="checkButton"
