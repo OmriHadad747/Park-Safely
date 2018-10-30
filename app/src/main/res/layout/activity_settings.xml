@@ -8,6 +8,10 @@
     tools:context="com.omriHadad.CMIYC.SettingsActivity"
     android:background="@color/primary_color">
 
+    <include
+        android:id="@+id/tool_bar"
+        layout="@layout/action_bar" />
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

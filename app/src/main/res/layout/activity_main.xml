@@ -1,30 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/background_color"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
     <include
-        layout="@layout/action_bar"
-        android:id="@+id/tool_bar"/>
+        android:id="@+id/tool_bar"
+        layout="@layout/action_bar" />
 
     <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="70dp"
-        android:layout_margin="5dp"
-        android:paddingTop="80dp"
+        android:layout_margin="15dp"
+        android:clickable="true"
+        android:onClick="configDetectionSwitch"
+        android:translationZ="5dp"
         app:cardBackgroundColor="@color/primary_dark_color"
         app:cardCornerRadius="20dp"
-        app:cardElevation="3dp"
-        android:translationZ="5dp"
-        android:clickable="true"
-        android:onClick="configDetectionSwitch">
+        app:cardElevation="3dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -33,11 +31,11 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Start Detection"
                 android:layout_centerInParent="true"
-                android:textStyle="bold"
+                android:text="Start Detection"
+                android:textColor="@color/text_color_primary_bg"
                 android:textSize="20dp"
-                android:textColor="@color/text_color_primary_bg"/>
+                android:textStyle="bold" />
 
         </RelativeLayout>
 
@@ -53,36 +51,36 @@
         <android.support.v7.widget.CardView
             android:id="@+id/wifi_button"
             android:layout_width="160dp"
-            android:onClick="wifiButtonOnClick"
             android:layout_height="190dp"
             android:layout_margin="10dp"
-            android:translationZ="5dp"
-            android:elevation="3dp"
-            app:cardCornerRadius="20dp"
             android:clickable="true"
-            android:foreground="?android:attr/selectableItemBackground">
+            android:elevation="3dp"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:onClick="wifiButtonOnClick"
+            android:translationZ="5dp"
+            app:cardCornerRadius="20dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:background="@color/primary_color"
                 android:gravity="center"
-                android:orientation="vertical"
-                android:background="@color/primary_color">
+                android:orientation="vertical">
 
                 <ImageView
                     android:id="@+id/wifi_image"
                     android:layout_width="64dp"
                     android:layout_height="64dp"
                     android:background="@drawable/circle_background"
-                    android:padding="10dp"/>
+                    android:padding="10dp" />
 
                 <TextView
                     android:id="@+id/wifi_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
-                    android:textStyle="bold"
-                    android:textColor="@color/text_color_primary_bg"/>
+                    android:textColor="@color/text_color_primary_bg"
+                    android:textStyle="bold" />
 
                 <View
                     android:layout_width="match_parent"
@@ -103,21 +101,21 @@
         </android.support.v7.widget.CardView>
 
         <android.support.v7.widget.CardView
-            android:foreground="?android:attr/selectableItemBackground"
-            android:translationZ="5dp"
-            android:elevation="3dp"
-            app:cardCornerRadius="20dp"
-            android:clickable="true"
             android:layout_width="160dp"
             android:layout_height="190dp"
-            android:layout_margin="10dp">
+            android:layout_margin="10dp"
+            android:clickable="true"
+            android:elevation="3dp"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:translationZ="5dp"
+            app:cardCornerRadius="20dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:background="@color/primary_color"
                 android:gravity="center"
-                android:orientation="vertical"
-                android:background="@color/primary_color">
+                android:orientation="vertical">
 
                 <ImageView
                     android:layout_width="64dp"
@@ -131,8 +129,8 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
                     android:text="Clone"
-                    android:textStyle="bold"
-                    android:textColor="@color/text_color_primary_bg"/>
+                    android:textColor="@color/text_color_primary_bg"
+                    android:textStyle="bold" />
 
                 <View
                     android:layout_width="match_parent"
@@ -162,22 +160,22 @@
         android:orientation="horizontal">
 
         <android.support.v7.widget.CardView
-            android:foreground="?android:attr/selectableItemBackground"
             android:layout_width="160dp"
             android:layout_height="190dp"
             android:layout_margin="10dp"
-            android:translationZ="5dp"
-            android:elevation="3dp"
-            app:cardCornerRadius="20dp"
             android:clickable="true"
-            android:onClick="settingButtonOnClick">
+            android:elevation="3dp"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:onClick="settingButtonOnClick"
+            android:translationZ="5dp"
+            app:cardCornerRadius="20dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:background="@color/primary_color"
                 android:gravity="center"
-                android:orientation="vertical"
-                android:background="@color/primary_color">
+                android:orientation="vertical">
 
                 <ImageView
                     android:layout_width="64dp"
@@ -191,8 +189,8 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
                     android:text="Settings"
-                    android:textStyle="bold"
-                    android:textColor="@color/text_color_primary_bg"/>
+                    android:textColor="@color/text_color_primary_bg"
+                    android:textStyle="bold" />
 
                 <View
                     android:layout_width="match_parent"
@@ -213,22 +211,22 @@
         </android.support.v7.widget.CardView>
 
         <android.support.v7.widget.CardView
-            android:foreground="?android:attr/selectableItemBackground"
             android:layout_width="160dp"
             android:layout_height="190dp"
             android:layout_margin="10dp"
-            android:translationZ="5dp"
-            android:elevation="3dp"
-            app:cardCornerRadius="20dp"
             android:clickable="true"
-            android:onClick="photoGalleryButtonOnClick">
+            android:elevation="3dp"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:onClick="photoGalleryButtonOnClick"
+            android:translationZ="5dp"
+            app:cardCornerRadius="20dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:background="@color/primary_color"
                 android:gravity="center"
-                android:orientation="vertical"
-                android:background="@color/primary_color">
+                android:orientation="vertical">
 
                 <ImageView
                     android:layout_width="64dp"
@@ -242,8 +240,8 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
                     android:text="Photos Library"
-                    android:textStyle="bold"
-                    android:textColor="@color/text_color_primary_bg"/>
+                    android:textColor="@color/text_color_primary_bg"
+                    android:textStyle="bold" />
 
                 <View
                     android:layout_width="match_parent"

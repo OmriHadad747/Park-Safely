@@ -21,19 +21,18 @@
     </color>-->
 
     <!-- wish style color set -->
-    <color name="primary_blue">#32B7EC</color>
-    <color name="secondary_light_blue">#55C2EE</color>
-    <color name="header_blue">#20A5DB</color>
+    <color name="primary_blue">#7c203a</color>
+    <color name="secondary_light_blue">#7c203a</color>
+    <color name="header_blue"></color>
     <color name="text">#FEFEFE</color>78CEF2
     <color name="baby_blue">#78CEF2</color>
 
-    <color name="primary_color">#32B7EC</color>
-    <color name="primary_dark_color">#20A5DB</color>
+    <color name="primary_color">#3090A1</color>
+    <color name="primary_dark_color">#BC5148</color>
     <color name="color_accent">#FEFEFE</color>78CEF2
     <color
-        name="background_color">#F8F6F8
-    </color>
-    <color name="text_color_primary_bg">#FEFEFE</color>78CEF2
+        name="background_color">#FEF8E6</color>
+    <color name="text_color_primary_bg">#feffff</color>
     <color
         name="black">#403A39
     </color>

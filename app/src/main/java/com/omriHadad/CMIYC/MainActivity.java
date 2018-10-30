@@ -36,13 +36,12 @@ public class MainActivity extends AppCompatActivity
     final static private String FILE_NAME = "json_file.txt";
     final static private String permissions[] = { Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
     private Context context;
-    private File file;
     private AccessPointInfo apInfo;
     private FileJobs fileJob;
     private WifiManager wfManager ;
-    private WifiBroadcastReceiver wfBroadcastReceiver;
-    private boolean connectionFlag = false;
-    private int networkId;
+    private WifiBroadcastReceiver wfBroadcast;
+    private boolean isConnected = false;
+    private int accessPointId;
     private String accessPointName;
     private String accessPointPass;
     private boolean detectionSwitch = true;
@@ -63,9 +62,20 @@ public class MainActivity extends AppCompatActivity
         //initialize important variables
         this.context = getApplicationContext();
         this.wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        wfBroadcastReceiver = new WifiBroadcastReceiver(wfManager, this.context);
+        this.wfBroadcast = new WifiBroadcastReceiver(this.wfManager, this.context);
+        registerReceiver(this.wfBroadcast, new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
+        this.apInfo = new AccessPointInfo(this.context);
+        this.fileJob = new FileJobs(this.context, this.apInfo, this.FILE_NAME);
 
-        //read JSON file to get access point name & password
+        if(this.apInfo.isConnectedToParkSafely(this.wfManager))
+        {
+            WifiInfo wfInfo = this.wfManager.getConnectionInfo();
+            if(wfInfo != null)
+                this.accessPointId = wfInfo.getNetworkId();
+            this.isConnected = true;
+        }
+
+        //read or write JSON file to get/set access point name & password
         fileHandler();
         //set Images depends on wifi connection
         setWifiImage();
@@ -77,17 +87,15 @@ public class MainActivity extends AppCompatActivity
 
     private void fileHandler()
     {
-        this.apInfo = new AccessPointInfo(this.context);
-        this.fileJob = new FileJobs(this.context, this.apInfo, this.FILE_NAME);
         if(!checkIfFileAlreadyExist())
         {
             File path = this.context.getFilesDir();
-            this.file = new File(path, FILE_NAME);  //create file for the first time
+            File file = new File(path, FILE_NAME);  //create file for the first time
             this.apInfo.setFileCreated(true);
             this.apInfo.setFirstEntered(true);
             this.accessPointName = this.apInfo.getAccessPointName();
             this.accessPointPass = this.apInfo.getAccessPointPass();
-            fileJob.writeJsonFile(this.file);
+            fileJob.writeJsonFile(file);
         }
         else
         {
@@ -125,7 +133,7 @@ public class MainActivity extends AppCompatActivity
         return false;
     }
 
-    private void wifiEnabling()
+    private void enableWifi()
     {
         if(!this.wfManager.isWifiEnabled())
         {
@@ -155,7 +163,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void locationEnabling()
+    private void enableLocation()
     {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
                 != (PackageManager.PERMISSION_GRANTED))
@@ -196,7 +204,7 @@ public class MainActivity extends AppCompatActivity
         ImageView wifiImg = findViewById(R.id.wifi_image);
         TextView wifiText = findViewById(R.id.wifi_text);
 
-        if(this.apInfo.isConnectedToPS(this.wfManager))
+        if(this.apInfo.isConnectedToParkSafely(this.wfManager))
         {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
@@ -235,18 +243,17 @@ public class MainActivity extends AppCompatActivity
 
     public void wifiButtonOnClick(View v)
     {
-        if(!this.connectionFlag)
+        if(!this.isConnected)
         {
-            wifiEnabling();
-            locationEnabling();
-            registerReceiver(wfBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+            enableWifi();
+            enableLocation();
+            registerReceiver(this.wfBroadcast, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         }
         else
         {
-            wfManager.disconnect();
-            wfManager.disableNetwork(networkId);
-            this.connectionFlag = false;
-            registerReceiver(wfBroadcastReceiver, new IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION));
+            this.wfManager.disconnect();
+            this.wfManager.disableNetwork(this.accessPointId);
+            this.isConnected = false;
         }
     }
 
@@ -317,31 +324,29 @@ public class MainActivity extends AppCompatActivity
             if(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(action))
             {
                 List<ScanResult> srl = wfManager.getScanResults();
-                if(srl.size() != 0)
+                if(srl.size() > 0)
                 {
                     for(ScanResult sr : srl)
                     {
                         if(sr.SSID.equals(accessPointName))  //if find the desirable access point
                         {
                             WifiConfiguration wfConfig = createConfig();
-                            networkId = this.wfManager.addNetwork(wfConfig);
+                            accessPointId = this.wfManager.addNetwork(wfConfig);
                             this.wfManager.disconnect();
-                            this.wfManager.enableNetwork(networkId, true);
+                            this.wfManager.enableNetwork(accessPointId, true);
                             this.wfManager.reconnect();
-                            unregisterReceiver(wfBroadcastReceiver);  //remove scan result event listener
+                            unregisterReceiver(wfBroadcast);  //remove scan result event listener
 
-                            while(!connectionFlag)  //system update on new connection
+                            for(int count=20; !isConnected && count>0; count--)//system updated on new connection
                             {
-                                if(apInfo.isConnectedToPS(this.wfManager))
+                                if(apInfo.isConnectedToParkSafely(this.wfManager))
                                 {
                                     ServerTask task = new ServerTask();
                                     try
                                     {
                                         String answer = task.execute("http://192.168.4.1/set_is_client_connected").get();
                                         if(answer.equals("DONE\n"))
-                                            connectionFlag = true;
-                                        else
-                                            continue;
+                                            isConnected = true;
                                     }
                                     catch (ExecutionException e)
                                     {
@@ -352,29 +357,27 @@ public class MainActivity extends AppCompatActivity
                                         e.printStackTrace();
                                     }
                                 }
-                                else continue;
                             }
 
-                            registerReceiver(wfBroadcastReceiver, new IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION));
-                            Toast.makeText(context, "Connected To Park-Safely", Toast.LENGTH_LONG);
+                            Toast.makeText(this.context, "Connected To Park-Safely", Toast.LENGTH_LONG).show();
+                            registerReceiver(wfBroadcast, new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
                             return;
                         }
                     }
 
                     Toast.makeText(this.context, "Park-Safely AP Is Not Found In Wifi Scan Area, Try Again", Toast.LENGTH_LONG).show();
-                    unregisterReceiver(wfBroadcastReceiver);
+                    unregisterReceiver(wfBroadcast);
                 }
             }
-            else if(WifiManager.WIFI_STATE_CHANGED_ACTION.equals(action))
+            else if(WifiManager.NETWORK_STATE_CHANGED_ACTION.equals(action))
             {
-                if(connectionFlag)
+                if(apInfo.isConnectedToParkSafely(this.wfManager))
                 {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                     {
                         ImageView wifiImg = findViewById(R.id.wifi_image);
                         wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
                     }
-
                     TextView wifiText = findViewById(R.id.wifi_text);
                     wifiText.setText("Tap To Disconnect");
                 }
@@ -385,11 +388,10 @@ public class MainActivity extends AppCompatActivity
                         ImageView wifiImg = findViewById(R.id.wifi_image);
                         wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
                     }
-
                     TextView wifiText = findViewById(R.id.wifi_text);
                     wifiText.setText("Tap To Connect");
+                    isConnected = false;
                 }
-                unregisterReceiver(wfBroadcastReceiver);
             }
         }
     }

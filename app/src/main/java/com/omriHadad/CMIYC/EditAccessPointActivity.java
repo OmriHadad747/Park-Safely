@@ -3,7 +3,6 @@ package com.omriHadad.CMIYC;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -40,7 +39,7 @@ public class EditAccessPointActivity extends AppCompatActivity
         this.fileJob = new FileJobs(this.context, this.apInfo, this.FILE_NAME);
         this.apInfo = fileJob.readJsonFile();
 
-        if(!apInfo.isConnectedToPS(wfManager))
+        if(!apInfo.isConnectedToParkSafely(wfManager))
             showMessage(ERR_CONNECTION_TITLE);
     }
 

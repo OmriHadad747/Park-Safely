@@ -47,7 +47,7 @@ public class AccessPointInfo
         this.accessPointPass = accessPointPass;
     }
 
-    public boolean isConnectedToPS(WifiManager wfManager)
+    public boolean isConnectedToParkSafely(WifiManager wfManager)
     {
         if (wfManager.isWifiEnabled())
         {
