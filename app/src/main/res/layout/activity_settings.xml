@@ -5,12 +5,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.omriHadad.CMIYC.SettingsActivity"
+    tools:context=".SettingsActivity"
     android:background="@color/primary_color">
 
-    <include
+    <!--<include
         android:id="@+id/tool_bar"
-        layout="@layout/action_bar" />
+        layout="@layout/action_bar"/>-->
+    <!--those lines makes errors-->
 
     <RelativeLayout
         android:layout_width="match_parent"

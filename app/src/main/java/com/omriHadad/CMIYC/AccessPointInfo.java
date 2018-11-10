@@ -1,12 +1,14 @@
 package com.omriHadad.CMIYC;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.util.Log;
 
 public class AccessPointInfo
 {
-    private Context context;
     private boolean fileCreated = false;
     private boolean firstEntered = false;
     private String accessPointName;
@@ -14,7 +16,6 @@ public class AccessPointInfo
 
     public AccessPointInfo(Context context)
     {
-        this.context = context;
         this.accessPointName = "Park-Safely AP";
         this.accessPointPass =  "01234567";
     }
@@ -47,17 +48,22 @@ public class AccessPointInfo
         this.accessPointPass = accessPointPass;
     }
 
-    public boolean isConnectedToParkSafely(WifiManager wfManager)
+    public boolean isConnectedToParkSafely(WifiManager wfManager, Context context)
     {
-        if (wfManager.isWifiEnabled())
+        if (wfManager.isWifiEnabled() )
         {
-            WifiInfo wfInfo = wfManager.getConnectionInfo();
-            if (wfInfo != null)
+            ConnectivityManager connectionManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo nwInfo = connectionManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+            if(nwInfo.isConnected())
             {
-                String ssid = wfInfo.getSSID().toString();
-                String tmpAccessPointName = "\"" + this.accessPointName + "\"";
-                if (ssid.equals(tmpAccessPointName))
-                    return true;
+                WifiInfo wfInfo = wfManager.getConnectionInfo();
+                if (wfInfo != null)
+                {
+                    String ssid = wfInfo.getSSID().toString();
+                    if (ssid.contains(this.accessPointName))
+                        return true;
+                }
             }
         }
 
