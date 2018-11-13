@@ -1,4 +1,4 @@
-package com.omriHadad.CMIYC;
+package com.omriHadad.ParkSafely;
 
 import android.content.Context;
 import android.content.DialogInterface;

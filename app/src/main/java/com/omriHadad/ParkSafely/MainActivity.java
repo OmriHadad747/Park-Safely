@@ -1,7 +1,6 @@
-package com.omriHadad.CMIYC;
+package com.omriHadad.ParkSafely;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -9,11 +8,8 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
-import android.net.wifi.ScanResult;
-import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
@@ -24,25 +20,21 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static android.app.ProgressDialog.show;
-
-enum fromWhere{onCreate, onReceive_scanResult, onReceive_connectivity};
+enum fromWhere{MAIN_ACTIVITY_onCreate, ConnectionTask, WIFI_BROADCAST_RECEIVER_onReceive};
 
 public class MainActivity extends AppCompatActivity
 {
     final static private String TAG = "main-activity";
     final static private String FILE_NAME = "json_file.txt";
-    final static private String permissions[] = { Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
+    final static private String permissions[] = {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
     private Context context;
     private AccessPointInfo apInfo;
     private File file;
@@ -87,12 +79,10 @@ public class MainActivity extends AppCompatActivity
         else
             this.isConnected = false;
 
-        //read or write JSON file to get/set access point name & password
-        fileHandler();
-        //set Images depends on wifi connection
-        setWifiImage(fromWhere.onCreate);
-        //set toolbar name
-        setToolbar();
+        fileHandler();  //read or write JSON file to get/set access point name & password
+        setWifiImage(fromWhere.MAIN_ACTIVITY_onCreate);  //set Images depends on wifi connection status
+        setToolbar();  //set toolbar name
+
     }
 
     //===========================logical functions==================================================
@@ -279,12 +269,12 @@ public class MainActivity extends AppCompatActivity
 
         switch(howCallMe)
         {
-            case onCreate:
+            case MAIN_ACTIVITY_onCreate:
             {
-                Log.d(TAG, "onCreate: ");
+                /*Log.d(TAG, "onCreate: ");*/
                 if(isConnected)
                 {
-                    Log.d(TAG, "isConnected: true");
+                    /*Log.d(TAG, "isConnected: true");*/
                     /*TODO - need to update the server on a connection*/
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                         wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
@@ -293,25 +283,25 @@ public class MainActivity extends AppCompatActivity
                 }
                 else
                 {
-                    Log.d(TAG, "isConnected: false");
+                    /*Log.d(TAG, "isConnected: false");*/
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                         wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
                     wifiText.setText("Tap To Connect");
                 }
                 break;
             }
-            case onReceive_scanResult:
+            case ConnectionTask:
             {
-                Log.d(TAG, "onReceive_scanResult: ");
+                /*Log.d(TAG, "onReceive_scanResult: ");*/
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                     wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
                 wifiText.setText("Tap To Disconnect");
                 registerReceiver(this.wifiBroadcast, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
                 break;
             }
-            case onReceive_connectivity:
+            case WIFI_BROADCAST_RECEIVER_onReceive:
             {
-                Log.d(TAG, "onReceive_connectivity: ");
+                /*Log.d(TAG, "onReceive_connectivity: ");*/
                 if(!this.wfManager.isWifiEnabled())
                 {
                     Log.d(TAG, "isWifiEnabled: false");
@@ -361,7 +351,7 @@ public class MainActivity extends AppCompatActivity
 
     //===========================broadcast receiver definition======================================
 
-    public class WifiBroadcastReceiver extends BroadcastReceiver
+    public class WifiBroadcastReceiver extends BroadcastReceiver  //this class implements broadcast receiver
     {
         WifiManager wfManager;
         Context context;
@@ -379,8 +369,8 @@ public class MainActivity extends AppCompatActivity
 
             if (WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(action))
             {
-                Log.d(TAG, "scan result");
-                ConnectionTask task = new ConnectionTask(getThis(), this.wfManager);
+                /*Log.d(TAG, "scan result");*/
+                ConnectionTask task = new ConnectionTask(getThis(), this.wfManager);// creation of async task that will perform the connection action
                 try
                 {
                     boolean result = task.execute(accessPointName, accessPointPass).get();
@@ -401,7 +391,7 @@ public class MainActivity extends AppCompatActivity
             }
             else if (ConnectivityManager.CONNECTIVITY_ACTION.equals(action))
             {
-                MainActivity.this.setWifiImage(fromWhere.onReceive_connectivity);
+                setWifiImage(fromWhere.WIFI_BROADCAST_RECEIVER_onReceive);
                 return;
             }
         }

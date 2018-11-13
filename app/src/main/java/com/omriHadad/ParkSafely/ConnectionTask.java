@@ -1,4 +1,4 @@
-package com.omriHadad.CMIYC;
+package com.omriHadad.ParkSafely;
 
 import android.app.ProgressDialog;
 import android.net.wifi.ScanResult;
@@ -6,7 +6,6 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.util.Log;
-
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -19,7 +18,7 @@ public class ConnectionTask extends AsyncTask<String, Void, Boolean>
 
     public ConnectionTask(MainActivity ma, WifiManager wfManager)
     {
-        Log.d(TAG, "ctor");
+        /*Log.d(TAG, "ctor");*/
         this.ma = ma;
         this.wfManager = wfManager;
         this.progress = new ProgressDialog(this.ma.getThis());
@@ -98,7 +97,7 @@ public class ConnectionTask extends AsyncTask<String, Void, Boolean>
                         }
                     }
 
-                    this.ma.setWifiImage(fromWhere.onReceive_scanResult); //update img
+                    this.ma.setWifiImage(fromWhere.ConnectionTask); //update img
                     return true;
                 }
             }
