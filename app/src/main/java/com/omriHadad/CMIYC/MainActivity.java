@@ -1,6 +1,7 @@
 package com.omriHadad.CMIYC;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +13,7 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
@@ -22,6 +24,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.io.File;
@@ -31,11 +34,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import static android.app.ProgressDialog.show;
+
 enum fromWhere{onCreate, onReceive_scanResult, onReceive_connectivity};
 
 public class MainActivity extends AppCompatActivity
 {
-    final static private String TAG = "general";
+    final static private String TAG = "main-activity";
     final static private String FILE_NAME = "json_file.txt";
     final static private String permissions[] = { Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
     private Context context;
@@ -43,8 +48,8 @@ public class MainActivity extends AppCompatActivity
     private File file;
     private FileJobs fileJob;
     private WifiManager wfManager ;
-    private WifiBroadcastReceiver wfBroadcast_first;
-    private WifiBroadcastReceiver wfBroadcast_second;
+    private WifiBroadcastReceiver scanResultBroadcast;
+    private WifiBroadcastReceiver wifiBroadcast;
     private int accessPointId;
     private String accessPointName;
     private String accessPointPass;
@@ -67,8 +72,8 @@ public class MainActivity extends AppCompatActivity
         //initialize important variables
         this.context = getApplicationContext();
         this.wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        this.wfBroadcast_first = new WifiBroadcastReceiver(this.wfManager, this.context);
-        this.wfBroadcast_second = new WifiBroadcastReceiver(this.wfManager, this.context);
+        this.scanResultBroadcast = new WifiBroadcastReceiver(this.wfManager, this.context);
+        this.wifiBroadcast = new WifiBroadcastReceiver(this.wfManager, this.context);
         this.apInfo = new AccessPointInfo(this.context);
         this.fileJob = new FileJobs(this.context, this.apInfo, this.FILE_NAME);
 
@@ -190,84 +195,6 @@ public class MainActivity extends AppCompatActivity
         catch(Exception e){}
     }
 
-    private WifiConfiguration createConfig()
-    {
-        WifiConfiguration wfConfig = new WifiConfiguration();
-        wfConfig.SSID = String.format("\"%s\"", this.accessPointName);
-        wfConfig.preSharedKey = String.format("\"%s\"", this.accessPointPass);
-        wfConfig.hiddenSSID = true;
-        wfConfig.status = WifiConfiguration.Status.ENABLED;
-        wfConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
-        wfConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-        wfConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
-        wfConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
-        wfConfig.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
-
-        return wfConfig;
-    }
-
-    private void setWifiImage(fromWhere howCallMe)
-    {
-        ImageView wifiImg = findViewById(R.id.wifi_image);
-        TextView wifiText = findViewById(R.id.wifi_text);
-
-        switch(howCallMe)
-        {
-            case onCreate:
-            {
-                Log.d(TAG, "onCreate: ");
-                if(isConnected)
-                {
-                    Log.d(TAG, "isConnected: true");
-                    /*TODO 1 - need to update the server on a connection*/
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                        wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
-                    wifiText.setText("Tap To Disconnect");
-                    registerReceiver(this.wfBroadcast_second, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
-                }
-                else
-                {
-                    Log.d(TAG, "isConnected: false");
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                        wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
-                    wifiText.setText("Tap To Connect");
-                }
-                break;
-            }
-            case onReceive_scanResult:
-            {
-                Log.d(TAG, "onReceive_scanResult: ");
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                    wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
-                wifiText.setText("Tap To Disconnect");
-                registerReceiver(this.wfBroadcast_second, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
-                break;
-            }
-            case onReceive_connectivity:
-            {
-                Log.d(TAG, "onReceive_connectivity: ");
-                if(!this.wfManager.isWifiEnabled())
-                {
-                    Log.d(TAG, "isWifiEnabled: false");
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                        wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
-                    wifiText.setText("Tap To Connect");
-                    unregisterReceiver(this.wfBroadcast_second);
-                }
-                break;
-            }
-        }
-    }
-
-    private void setToolbar()
-    {
-        android.support.v7.widget.Toolbar toolbar;
-
-        toolbar = findViewById(R.id.tool_bar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("Park-Safely");
-    }
-
     //===========================onClick functions==================================================
 
     public void photoGalleryButtonOnClick(View v)
@@ -286,7 +213,7 @@ public class MainActivity extends AppCompatActivity
         {
             enableWifi();
             enableLocation();
-            registerReceiver(this.wfBroadcast_first, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+            registerReceiver(this.scanResultBroadcast, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         }
         else
         {
@@ -343,6 +270,95 @@ public class MainActivity extends AppCompatActivity
             }
     }
 
+    //===========================setters & getters======================================
+
+    protected void setWifiImage(fromWhere howCallMe)
+    {
+        ImageView wifiImg = findViewById(R.id.wifi_image);
+        TextView wifiText = findViewById(R.id.wifi_text);
+
+        switch(howCallMe)
+        {
+            case onCreate:
+            {
+                Log.d(TAG, "onCreate: ");
+                if(isConnected)
+                {
+                    Log.d(TAG, "isConnected: true");
+                    /*TODO - need to update the server on a connection*/
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                        wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
+                    wifiText.setText("Tap To Disconnect");
+                    registerReceiver(this.wifiBroadcast, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+                }
+                else
+                {
+                    Log.d(TAG, "isConnected: false");
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                        wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
+                    wifiText.setText("Tap To Connect");
+                }
+                break;
+            }
+            case onReceive_scanResult:
+            {
+                Log.d(TAG, "onReceive_scanResult: ");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                    wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
+                wifiText.setText("Tap To Disconnect");
+                registerReceiver(this.wifiBroadcast, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+                break;
+            }
+            case onReceive_connectivity:
+            {
+                Log.d(TAG, "onReceive_connectivity: ");
+                if(!this.wfManager.isWifiEnabled())
+                {
+                    Log.d(TAG, "isWifiEnabled: false");
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                        wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
+                    wifiText.setText("Tap To Connect");
+                    unregisterReceiver(this.wifiBroadcast);
+                }
+                break;
+            }
+        }
+    }
+
+    private void setToolbar()
+    {
+        android.support.v7.widget.Toolbar toolbar;
+
+        toolbar = findViewById(R.id.tool_bar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("Park-Safely");
+    }
+
+    public MainActivity getThis()
+    {
+        return this;
+    }
+
+    protected void setIsConnected(boolean bool)
+    {
+        isConnected = bool;
+    }
+
+    protected void setAccessPointId(int id)
+    {
+        accessPointId = id;
+    }
+
+    protected int getAccessPointId()
+    {
+        return accessPointId;
+    }
+
+    protected Context getContext()
+    {
+        return this.context;
+    }
+
     //===========================broadcast receiver definition======================================
 
     public class WifiBroadcastReceiver extends BroadcastReceiver
@@ -356,15 +372,6 @@ public class MainActivity extends AppCompatActivity
             this.context = context;
         }
 
-        private void wifiConfiguration()
-        {
-            WifiConfiguration wfConfig = createConfig();
-            accessPointId = this.wfManager.addNetwork(wfConfig);
-            this.wfManager.disconnect();
-            this.wfManager.enableNetwork(accessPointId, true);
-            this.wfManager.reconnect();
-        }
-
         @Override
         public void onReceive(Context context, Intent intent)
         {
@@ -373,51 +380,28 @@ public class MainActivity extends AppCompatActivity
             if (WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(action))
             {
                 Log.d(TAG, "scan result");
-                List<ScanResult> srl = wfManager.getScanResults();
-                if (srl.size() > 0)
+                ConnectionTask task = new ConnectionTask(getThis(), this.wfManager);
+                try
                 {
-                    for (ScanResult sr : srl)
-                    {
-                        if (sr.SSID.equals(accessPointName))  //if find the desirable access point
-                        {
-                            this.wifiConfiguration();
-                            unregisterReceiver(wfBroadcast_first);  //remove scan result event listener
-
-                            for (int count = 10; count > 0; count--)//system updated on new connection
-                            {
-                                ServerTask task = new ServerTask();
-                                try
-                                {
-                                    String answer = task.execute("http://192.168.4.1/set_is_client_connected").get();
-                                    if (answer.equals("DONE\n"))
-                                    {
-                                        isConnected = true;
-                                        break;
-                                    }
-                                }
-                                catch (ExecutionException e)
-                                {
-                                    e.printStackTrace();
-                                }
-                                catch (InterruptedException e)
-                                {
-                                    e.printStackTrace();
-                                }
-                            }
-
-                            Toast.makeText(this.context, "Connected To Park-Safely", Toast.LENGTH_LONG).show();
-                            setWifiImage(fromWhere.onReceive_scanResult); //update img
-                            return;
-                        }
-                    }
-
-                    Toast.makeText(this.context, "Park-Safely AP Is Not Found In Wifi Scan Area, Try Again", Toast.LENGTH_LONG).show();
-                    unregisterReceiver(wfBroadcast_first);
+                    boolean result = task.execute(accessPointName, accessPointPass).get();
+                    if(result)
+                        Toast.makeText(this.context, "Connected To Park-Safely", Toast.LENGTH_LONG).show();
+                    else
+                        Toast.makeText(this.context, "Park-Safely AP Is Not Found In Wifi Scan Area, Try Again", Toast.LENGTH_LONG).show();
                 }
+                catch (ExecutionException e)
+                {
+                    e.printStackTrace();
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+                unregisterReceiver(scanResultBroadcast);  //remove scan result event listener
             }
             else if (ConnectivityManager.CONNECTIVITY_ACTION.equals(action))
             {
-                setWifiImage(fromWhere.onReceive_connectivity);
+                MainActivity.this.setWifiImage(fromWhere.onReceive_connectivity);
                 return;
             }
         }
