@@ -8,8 +8,7 @@
 
 //variables
 Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
-double startX, startY;
-double currX, currY;
+double startX, startY, currX, currY;
 boolean initMeasure = false;
 boolean isParking = false;
 boolean isClientConnected = false;
@@ -49,7 +48,14 @@ void chooseRange(int range)
   }
 }
 
-void setIsClientConnected()
+void ConnectedOff()
+{
+  isClientConnected = false;
+  Serial.println("client disconnected");
+  accessPointServer.send(200, "text/html", "DONE");
+}
+
+void ConnectedOn()
 {
   isClientConnected = true;
   Serial.println("client connected");
@@ -80,11 +86,6 @@ void endDetection()
   accessPointServer.send(200, "text/html", "DONE");
   Serial.println("Detection ended");
 }
-
-//void loadIncomingClient()
-//{
-//  WifiClient client = accessPointServer.client()
-//}
 
 void printAccelDate(sensors_event_t event)
 {
@@ -136,7 +137,8 @@ void setup(void)
   accessPointServer.on("/start_detection", startDetection);
   accessPointServer.on("/end_detection", endDetection);
   accessPointServer.on("/update_access_point_details", updateAccessPointDetails);
-  accessPointServer.on("/set_is_client_connected", setIsClientConnected);
+  accessPointServer.on("/connected_on", ConnectedOn);
+  accessPointServer.on("/connected_off", ConnectedOff);
   accessPointServer.begin();
 
   //Initialise the sensor
@@ -158,7 +160,6 @@ void setup(void)
 void loop(void) 
 {  
   accessPointServer.handleClient();
-  //loadIncomingClient();
   
   if(isClientConnected && isParking)
     runDetection();

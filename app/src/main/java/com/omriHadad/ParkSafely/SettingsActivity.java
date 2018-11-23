@@ -17,7 +17,6 @@ public class SettingsActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-        //this.toolbar = findViewById(R.id.tool_bar);  //this line make errors
     }
 
     public void editApButtonOnClick(View v)

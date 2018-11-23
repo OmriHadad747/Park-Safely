@@ -1,11 +1,8 @@
 package com.omriHadad.ParkSafely;
 
 import android.content.Context;
-import android.widget.Toast;
-
 import com.alibaba.fastjson.JSON;
 import com.google.gson.Gson;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -17,14 +14,12 @@ import java.io.InputStreamReader;
 public class FileJobs
 {
     private Context context;
-    private AccessPointInfo sf;
     private String fileName;
     private Gson gson;
 
-    public FileJobs(Context context, AccessPointInfo sf, String fileName)
+    public FileJobs(Context context, String fileName)
     {
         this.context = context;
-        this.sf = sf;
         this.fileName = fileName;
         this.gson = new Gson();
     }
@@ -61,12 +56,12 @@ public class FileJobs
         return gson.fromJson(json, AccessPointInfo.class);
     }
 
-    public boolean writeJsonFile(File file)
+    public boolean writeJsonFile(AccessPointInfo apInfo, File file)
     {
         try
         {
             FileOutputStream streamOut = new FileOutputStream(file);
-            streamOut.write(JSON.toJSONString(this.sf).getBytes());
+            streamOut.write(JSON.toJSONString(apInfo).getBytes());
             return true;
         }
         catch (IOException e)

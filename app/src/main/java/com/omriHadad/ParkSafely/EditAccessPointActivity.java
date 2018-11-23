@@ -35,8 +35,8 @@ public class EditAccessPointActivity extends AppCompatActivity
         context = getApplicationContext();
 
         this.wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        this.apInfo = new AccessPointInfo(this.context);
-        this.fileJob = new FileJobs(this.context, this.apInfo, this.FILE_NAME);
+        this.apInfo = MainActivity.getApInfo();
+        this.fileJob = new FileJobs(this.context, this.FILE_NAME);
         this.apInfo = fileJob.readJsonFile();
 
         if(!apInfo.isConnectedToParkSafely(wfManager, this.context))
@@ -71,15 +71,17 @@ public class EditAccessPointActivity extends AppCompatActivity
         {
             this.apInfo.setAccessPointName(this.newName.getText().toString());
             this.apInfo.setAccessPointPass(this.newPassword.getText().toString());
-            this.fileJob.writeJsonFile(new File(this.FILE_NAME));
+            File path = this.context.getFilesDir();
+            this.fileJob.writeJsonFile(this.apInfo, new File(path, this.FILE_NAME)); //update json file with new values
+
 
             ServerTask task = new ServerTask();
             try
             {
                 String s1 = "omri";
                 String s2 = "omri2";
-                String answer = task.execute("http://192.168.4.1/update_access_point_details", s1, s2).get();
-                if(answer.equals("DONE\n"))
+                String ans = task.execute("http://192.168.4.1/update_access_point_details", s1, s2).get();
+                if(ans.equals("DONE\n"))
                 {
                     Toast.makeText(this.context, "User Name & Password Saved Successfully", Toast.LENGTH_LONG).show();
                     startActivity(new Intent(EditAccessPointActivity.this, MainActivity.class));
