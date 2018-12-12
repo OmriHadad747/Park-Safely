@@ -74,21 +74,20 @@ public class EditAccessPointActivity extends AppCompatActivity
             File path = this.context.getFilesDir();
             this.fileJob.writeJsonFile(this.apInfo, new File(path, this.FILE_NAME)); //update json file with new values
 
-
-            ServerTask task = new ServerTask();
+            UpdateAccessPointTask task = new UpdateAccessPointTask();
             try
             {
-                String s1 = "omri";
-                String s2 = "omri2";
-                String ans = task.execute("http://192.168.4.1/update_access_point_details", s1, s2).get();
-                if(ans.equals("DONE\n"))
+                String answer = task.execute("http://192.168.4.1/update_access_point_details",
+                        this.apInfo.getAccessPointName(),
+                        this.apInfo.getAccessPointPass()).get();
+                if(answer.equals("DONE\n"))
                 {
                     Toast.makeText(this.context, "User Name & Password Saved Successfully", Toast.LENGTH_LONG).show();
                     startActivity(new Intent(EditAccessPointActivity.this, MainActivity.class));
                 }
-                else
+                else if(answer.equals("ERROR"))
                 {
-                    Toast.makeText(this.context, "User Name & Password NOT Saved Successfully, Try Again", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this.context, "User Name & Password Saved Unsuccessfully, Try Again", Toast.LENGTH_LONG).show();
                     startActivity(new Intent(EditAccessPointActivity.this, EditAccessPointActivity.class));
                 }
             }

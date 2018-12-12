@@ -24,6 +24,14 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -69,7 +77,7 @@ public class MainActivity extends AppCompatActivity
         this.wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         this.scanResultBroadcast = new WifiBroadcastReceiver(this.wfManager);
         this.wifiBroadcast = new WifiBroadcastReceiver(this.wfManager);
-        this.apInfo = new AccessPointInfo(this.context);
+        this.apInfo = new AccessPointInfo();
         this.fileJob = new FileJobs(this.context, this.FILE_NAME);
 
         if(this.apInfo.isConnectedToParkSafely(this.wfManager, this.context))
@@ -169,8 +177,8 @@ public class MainActivity extends AppCompatActivity
 
     private boolean updateOnConnection(boolean state)
     {
-        ServerTask task = new ServerTask();
-        String ans = null;
+        UpdateOnConnectionTask task = new UpdateOnConnectionTask();
+        String ans;
 
         if(state)
         {
@@ -254,38 +262,45 @@ public class MainActivity extends AppCompatActivity
 
     //===========================switches configuration=============================================
 
-    public void detection(View v)
+    public void startEndDetection(View v)
     {
-            ServerTask task = new ServerTask();
-            String ans = null;
-            if (detectionSwitch)
+            StartEndDetectionTask task = new StartEndDetectionTask();
+            String ans;
+
+            if (this.detectionSwitch)
             {
                 try
                 {
-                    detectionSwitch = false;
                     ans = task.execute("http://192.168.4.1/start_detection").get();
                     if (ans.equals("DONE\n"))
+                    {
+                        this.detectionSwitch = false;
                         Toast.makeText(this.context, "Detection Enabled", Toast.LENGTH_LONG).show();
+                    }
                     else
-                        Toast.makeText(this.context, "Device Not found", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this.context, "Device Not Found", Toast.LENGTH_LONG).show();
                 }
                 catch (ExecutionException e)
                 {
-                    //e.printStackTrace();
+                    e.printStackTrace();
                 }
                 catch (InterruptedException e)
                 {
-                    //e.printStackTrace();
+                    e.printStackTrace();
                 }
             }
             else
             {
                 try
                 {
-                    detectionSwitch = true;
                     ans = task.execute("http://192.168.4.1/end_detection").get();
                     if (ans.equals("DONE\n"))
+                    {
+                        detectionSwitch = true;
                         Toast.makeText(this.context, "Detection Disabled", Toast.LENGTH_LONG).show();
+                    }
+                    else
+                        Toast.makeText(this.context, "Device Not Found", Toast.LENGTH_LONG).show();
                 }
                 catch (ExecutionException e)
                 {
@@ -298,7 +313,7 @@ public class MainActivity extends AppCompatActivity
             }
     }
 
-    //===========================setters & getters======================================
+    //===========================setters & getters==================================================
 
     static public AccessPointInfo getApInfo()
     {
@@ -459,7 +474,7 @@ public class MainActivity extends AppCompatActivity
                 }
             }
 
-            Toast.makeText(getContext(), "Park-Safely AP Is Not Found In Wifi Scan Area, Try Again", Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), getAccessPointName() + " AP Is Not Found In Wifi Scan Area, Try Again", Toast.LENGTH_LONG).show();
             unregisterReceiver(scanResultBroadcast);  //remove scan result event listener
             return;
         }

@@ -12,7 +12,7 @@ public class AccessPointInfo
     private String accessPointName;
     private String accessPointPass;
 
-    public AccessPointInfo(Context context)
+    public AccessPointInfo()
     {
         this.accessPointName = "Park-Safely AP";
         this.accessPointPass =  "01234567";
@@ -34,12 +34,12 @@ public class AccessPointInfo
 
     public boolean isConnectedToParkSafely(WifiManager wfManager, Context context)
     {
-        if (wfManager.isWifiEnabled() )
+        if (wfManager.isWifiEnabled())
         {
             ConnectivityManager connectionManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo nwInfo = connectionManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 
-            if(nwInfo.isConnected())
+            if(nwInfo != null && nwInfo.isConnected())
             {
                 WifiInfo wfInfo = wfManager.getConnectionInfo();
                 if (wfInfo != null)

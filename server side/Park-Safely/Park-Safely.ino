@@ -1,5 +1,5 @@
+//#include <WiFiClient.h>
 #include <ESP8266WiFi.h>
-#include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
@@ -57,20 +57,26 @@ void ConnectedOff()
 
 void ConnectedOn()
 {
-  isClientConnected = true;
-  Serial.println("client connected");
-  accessPointServer.send(200, "text/html", "DONE");
+   isClientConnected = true;
+   Serial.println("client connected");
+   accessPointServer.send(200, "text/html", "DONE");
 }
 
 void updateAccessPointDetails()
 {
-  Serial.println("-->updateAccessPointDetails() called"); 
-  String firstArg, secondArg;
-  firstArg = accessPointServer.arg(0);
-  Serial.println(firstArg);
-  secondArg = accessPointServer.arg(1);
-  Serial.println(secondArg);
-  accessPointServer.send(200, "text/html", "DONE");
+  if (!server.hasArg("plain"))
+  { //Check if body received
+    server.send(200, "text/plain", "Body not received");
+    return;
+  }
+ 
+  String message = "Body received:\n";
+  message += server.arg("plain");
+  message += "\n";
+ 
+  server.send(200, "text/plain", "DONE");
+  Serial.println(message);
+  //TODO
 }
 
 void startDetection()
