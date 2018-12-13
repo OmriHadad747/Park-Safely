@@ -27,7 +27,7 @@ import java.net.URL;
 public class UpdateAccessPointTask extends AsyncTask<String, Void, String>
 {
 
-    public static JSONObject buildJsonObject(String accessPointName, String accessPointPass)
+    private static JSONObject buildJsonObject(String accessPointName, String accessPointPass)
     {
         JSONObject json = new JSONObject();
         try
@@ -53,7 +53,7 @@ public class UpdateAccessPointTask extends AsyncTask<String, Void, String>
         os.close();
     }
 
-    public String execTask(String url_, String accessPointName, String accessPointPass)
+    private String execTask(String url_, String accessPointName, String accessPointPass)
     {
         try
         {

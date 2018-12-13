@@ -25,13 +25,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -43,7 +36,7 @@ enum fromWhere{onCreate, onReceive, updateConnectionOn, updateConnectionOff};
 
 public class MainActivity extends AppCompatActivity
 {
-    final static private String TAG = "omriLog";
+    final static private String TAG = "parkSafelyLog";
     final static private String FILE_NAME = "json_file.txt";
     final static private String permissions[] = {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
     private Context context;
@@ -72,6 +65,10 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        requestPermissions();
+
+        Log.d(TAG, "omri");
+
         //initialize important variables
         this.context = getApplicationContext();
         this.wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
@@ -97,6 +94,14 @@ public class MainActivity extends AppCompatActivity
     }
 
     //===========================logical functions==================================================
+
+    private void requestPermissions()
+    {
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)!=(PackageManager.PERMISSION_GRANTED))
+        {
+            ActivityCompat.requestPermissions(this, permissions, 123);
+        }
+    }
 
     private void fileHandler()
     {
@@ -157,57 +162,34 @@ public class MainActivity extends AppCompatActivity
 
     private void enableLocation()
     {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-                != (PackageManager.PERMISSION_GRANTED))
-        {
-            ActivityCompat.requestPermissions(this, permissions, 123);
-        }
-
         LocationManager lm = (LocationManager)this.context.getSystemService(Context.LOCATION_SERVICE);
         try
         {
             if(!lm.isProviderEnabled(LocationManager.GPS_PROVIDER))
-            {
-                Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                startActivity(myIntent);
-            }
+                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
         }
         catch(Exception e){}
     }
 
-    private boolean updateOnConnection(boolean state)
+    private boolean updateServerAboutConnection(boolean state)
     {
         UpdateOnConnectionTask task = new UpdateOnConnectionTask();
-        String ans;
-
-        if(state)
+        try
         {
-            try
+            if(state)
             {
-                ans = task.execute("http://192.168.4.1/connected_on").get();
+                String ans = task.execute("http://192.168.4.1/connected_on").get();
                 if(ans.equals("DONE\n"))
                 {
                     this.isConnected = true;
-                    setWifiImage(fromWhere.updateConnectionOn); //update img
-                    Toast.makeText(getContext(), "Connected To Park-Safely", Toast.LENGTH_LONG).show();
-                    unregisterReceiver(scanResultBroadcast);  //remove scan result event listener
+                    setWifiImage(fromWhere.updateConnectionOn); /*update img*/
+                    Toast.makeText(this.context, "Connected To Park-Safely", Toast.LENGTH_LONG).show();
                     return true;
                 }
             }
-            catch (ExecutionException e)
+            else
             {
-                e.printStackTrace();
-            }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();
-            }
-        }
-        else if(!state)
-        {
-            try
-            {
-                ans = task.execute("http://192.168.4.1/connected_off").get();
+                String ans = task.execute("http://192.168.4.1/connected_off").get();
                 if(ans.equals("DONE\n"))
                 {
                     this.isConnected = false;
@@ -215,18 +197,18 @@ public class MainActivity extends AppCompatActivity
                     this.wfManager.disconnect();
                     this.wfManager.disableNetwork(this.accessPointId);
                     this.wfManager.setWifiEnabled(false);
-                    Toast.makeText(getContext(), "Disconnected From Park-Safely", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this.context, "Disconnected From Park-Safely", Toast.LENGTH_LONG).show();
                     return true;
                 }
             }
-            catch (ExecutionException e)
-            {
-                e.printStackTrace();
-            }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();
-            }
+        }
+        catch (ExecutionException e)
+        {
+            e.printStackTrace();
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
         }
 
         return false;
@@ -255,70 +237,63 @@ public class MainActivity extends AppCompatActivity
         else
         {
             int updateAttempts = 20;
-            while(!updateOnConnection(false) &&  updateAttempts-- > 0)
+            while(!updateServerAboutConnection(false) &&  updateAttempts-- > 0)
                 Log.d(TAG, "disconnect - loop number: " + updateAttempts);
         }
     }
 
-    //===========================switches configuration=============================================
-
-    public void startEndDetection(View v)
+    public void startEndDetectionOnClick(View v)
     {
-            StartEndDetectionTask task = new StartEndDetectionTask();
-            String ans;
+        StartEndDetectionTask task = new StartEndDetectionTask();
+        String ans;
 
-            if (this.detectionSwitch)
+        if (this.detectionSwitch)
+        {
+            try
             {
-                try
+                ans = task.execute("http://192.168.4.1/start_detection").get();
+                if (ans.equals("DONE\n"))
                 {
-                    ans = task.execute("http://192.168.4.1/start_detection").get();
-                    if (ans.equals("DONE\n"))
-                    {
-                        this.detectionSwitch = false;
-                        Toast.makeText(this.context, "Detection Enabled", Toast.LENGTH_LONG).show();
-                    }
-                    else
-                        Toast.makeText(this.context, "Device Not Found", Toast.LENGTH_LONG).show();
+                    this.detectionSwitch = false;
+                    Toast.makeText(this.context, "Detection Enabled", Toast.LENGTH_LONG).show();
                 }
-                catch (ExecutionException e)
-                {
-                    e.printStackTrace();
-                }
-                catch (InterruptedException e)
-                {
-                    e.printStackTrace();
-                }
+                else
+                    Toast.makeText(this.context, "Device Not Found", Toast.LENGTH_LONG).show();
             }
-            else
+            catch (ExecutionException e)
             {
-                try
-                {
-                    ans = task.execute("http://192.168.4.1/end_detection").get();
-                    if (ans.equals("DONE\n"))
-                    {
-                        detectionSwitch = true;
-                        Toast.makeText(this.context, "Detection Disabled", Toast.LENGTH_LONG).show();
-                    }
-                    else
-                        Toast.makeText(this.context, "Device Not Found", Toast.LENGTH_LONG).show();
-                }
-                catch (ExecutionException e)
-                {
-                    e.printStackTrace();
-                }
-                catch (InterruptedException e)
-                {
-                    e.printStackTrace();
-                }
+                e.printStackTrace();
             }
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        else
+        {
+            try
+            {
+                ans = task.execute("http://192.168.4.1/end_detection").get();
+                if (ans.equals("DONE\n"))
+                {
+                    detectionSwitch = true;
+                    Toast.makeText(this.context, "Detection Disabled", Toast.LENGTH_LONG).show();
+                }
+                else
+                    Toast.makeText(this.context, "Device Not Found", Toast.LENGTH_LONG).show();
+            }
+            catch (ExecutionException e)
+            {
+                e.printStackTrace();
+            }
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+        }
     }
 
     //===========================setters & getters==================================================
-
-    static public AccessPointInfo getApInfo()
-    {
-        return apInfo;
-    }
 
     protected void setWifiImage(fromWhere howCallMe)
     {
@@ -331,7 +306,9 @@ public class MainActivity extends AppCompatActivity
             {
                 if(isConnected)
                 {
-                    /*TODO - need to update the server on a connection*/
+                    int updateAttempts = 20;
+                    while(!updateServerAboutConnection(true) &&  updateAttempts-- > 0)
+                        Log.d(TAG, "connect - loop number: " + updateAttempts);
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                         wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
                     wifiText.setText("Tap To Disconnect");
@@ -359,12 +336,12 @@ public class MainActivity extends AppCompatActivity
                     wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
                 wifiText.setText("Tap To Connect");
                 unregisterReceiver(this.wifiBroadcast);
+                break;
             }
             case onReceive:
             {
                 if(!this.wfManager.isWifiEnabled())
                 {
-                    /*TODO - need to update the server on a disconnection*/
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                         wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
                     wifiText.setText("Tap To Connect");
@@ -378,20 +355,9 @@ public class MainActivity extends AppCompatActivity
     private void setToolbar()
     {
         android.support.v7.widget.Toolbar toolbar;
-
         toolbar = findViewById(R.id.tool_bar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("Park-Safely");
-    }
-
-    public MainActivity getThis()
-    {
-        return this;
-    }
-
-    protected void setIsConnected(boolean bool)
-    {
-        this.isConnected = bool;
     }
 
     protected void setAccessPointId(int id)
@@ -404,11 +370,6 @@ public class MainActivity extends AppCompatActivity
         return this.accessPointId;
     }
 
-    protected Context getContext()
-    {
-        return this.context;
-    }
-
     protected String getAccessPointName()
     {
         return this.accessPointName;
@@ -419,9 +380,14 @@ public class MainActivity extends AppCompatActivity
         return this.accessPointPass;
     }
 
+    static public AccessPointInfo getApInfo()
+    {
+        return apInfo;
+    }
+
     //===========================broadcast receiver definition======================================
 
-    public class WifiBroadcastReceiver extends BroadcastReceiver  //this class implements broadcast receiver
+    public class WifiBroadcastReceiver extends BroadcastReceiver  /*this class implements broadcast receiver*/
     {
         WifiManager wfManager;
 
@@ -456,25 +422,31 @@ public class MainActivity extends AppCompatActivity
             this.wfManager.reconnect();
         }
 
-        private void connectToParkSafely()
+        private void connectToParkSafelyAP()
         {
-            List<ScanResult> srl = wfManager.getScanResults();
+            List<ScanResult> srl = this.wfManager.getScanResults();
             if (srl.size() > 0)
             {
                 for (ScanResult sr : srl)
                 {
-                    if (sr.SSID.equals(getAccessPointName()))  //if find the desirable access point
+                    if (sr.SSID.equals(getAccessPointName()))  /*if the desirable access point founded*/
                     {
                         enableNetwork();
                         int updateAttempts = 20;
-                        while(!updateOnConnection(true) &&  updateAttempts-- > 0)
+                        while(!updateServerAboutConnection(true) &&  updateAttempts-- > 0)
                             Log.d(TAG, "connect - loop number: " + updateAttempts);
+                        unregisterReceiver(scanResultBroadcast);  /*remove scan result event listener*/
                         return;
                     }
                 }
             }
+            else if(srl.size() == 0)  /*for the case that onReceive called but location is still disabled*/
+            {
+                Toast.makeText(context, "You Have To Enable Location First", Toast.LENGTH_LONG).show();
+                return;
+            }
 
-            Toast.makeText(getContext(), getAccessPointName() + " AP Is Not Found In Wifi Scan Area, Try Again", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, getAccessPointName() + " AP Is Not Found In Wifi Scan Area, Try Again", Toast.LENGTH_LONG).show();
             unregisterReceiver(scanResultBroadcast);  //remove scan result event listener
             return;
         }
@@ -486,7 +458,7 @@ public class MainActivity extends AppCompatActivity
 
             if (WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(action))
             {
-                connectToParkSafely();
+                connectToParkSafelyAP();
                 return;
             }
             else if (ConnectivityManager.CONNECTIVITY_ACTION.equals(action))

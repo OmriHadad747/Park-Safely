@@ -21,7 +21,7 @@ public class EditAccessPointActivity extends AppCompatActivity
     final static private String ERR_CONNECTION_TITLE = "Device Is Not Connected";
     final static private String ERR_PASS_TITLE = "Passwords Was Wrong";
     final static private String FILE_NAME = "json_file.txt";
-    final static private String TAG = "omriLog";
+    final static private String TAG = "Park-Safely Log";
     private Context context;
     private WifiManager wfManager;
     private FileJobs fileJob;

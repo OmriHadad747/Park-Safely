@@ -20,12 +20,12 @@ public class AccessPointInfo
 
     public String getAccessPointName(){return this.accessPointName;}
 
+    public String getAccessPointPass(){return this.accessPointPass;}
+
     public void setAccessPointName(String accessPointName)
     {
         this.accessPointName = accessPointName;
     }
-
-    public String getAccessPointPass(){return this.accessPointPass;}
 
     public void setAccessPointPass(String accessPointPass)
     {

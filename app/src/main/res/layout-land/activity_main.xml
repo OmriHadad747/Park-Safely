@@ -24,7 +24,7 @@
         app:cardElevation="3dp"
         android:translationZ="5dp"
         android:clickable="true"
-        android:onClick="startEndDetection">
+        android:onClick="startEndDetectionOnClick">
 
         <RelativeLayout
             android:layout_width="match_parent"
