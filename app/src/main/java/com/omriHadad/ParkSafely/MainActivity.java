@@ -67,8 +67,6 @@ public class MainActivity extends AppCompatActivity
 
         requestPermissions();
 
-        Log.d(TAG, "omri");
-
         //initialize important variables
         this.context = getApplicationContext();
         this.wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
@@ -77,19 +75,10 @@ public class MainActivity extends AppCompatActivity
         this.apInfo = new AccessPointInfo();
         this.fileJob = new FileJobs(this.context, this.FILE_NAME);
 
-        if(this.apInfo.isConnectedToParkSafely(this.wfManager, this.context))
-        {
-            WifiInfo wfInfo = this.wfManager.getConnectionInfo();
-            if(wfInfo != null)
-                this.accessPointId = wfInfo.getNetworkId();
-            this.isConnected = true;
-        }
-        else
-            this.isConnected = false;
-
-        fileHandler();  //read or write JSON file to get/set access point name & password
-        setWifiImage(fromWhere.onCreate);  //set Images depends on wifi connection status
-        setToolbar();  //set toolbar name
+        this.setIsConnected();  /*check if connected to park safely and sets the variable isConnected*/
+        this.fileHandler();  //read or write JSON file to get/set access point name & password
+        this.setWifiImage(fromWhere.onCreate);  //set Images depends on wifi connection status
+        this.setToolbar();  //set toolbar name
 
     }
 
@@ -358,6 +347,19 @@ public class MainActivity extends AppCompatActivity
         toolbar = findViewById(R.id.tool_bar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("Park-Safely");
+    }
+
+    private void setIsConnected()
+    {
+        if(this.apInfo.isConnectedToParkSafely(this.wfManager, this.context))
+        {
+            WifiInfo wfInfo = this.wfManager.getConnectionInfo();
+            if(wfInfo != null)
+                this.accessPointId = wfInfo.getNetworkId();
+            this.isConnected = true;
+        }
+        else
+            this.isConnected = false;
     }
 
     protected void setAccessPointId(int id)
