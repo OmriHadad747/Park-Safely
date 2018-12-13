@@ -64,19 +64,11 @@ void ConnectedOn()
 
 void updateAccessPointDetails()
 {
-  if (!server.hasArg("plain"))
-  { //Check if body received
-    server.send(200, "text/plain", "Body not received");
-    return;
-  }
- 
   String message = "Body received:\n";
-  message += server.arg("plain");
+  message += accessPointServer.arg("plain");
   message += "\n";
- 
-  server.send(200, "text/plain", "DONE");
   Serial.println(message);
-  //TODO
+  //accessPointServer.send(200, "text/html", "DONE");
 }
 
 void startDetection()

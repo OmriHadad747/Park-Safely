@@ -21,6 +21,7 @@ public class EditAccessPointActivity extends AppCompatActivity
     final static private String ERR_CONNECTION_TITLE = "Device Is Not Connected";
     final static private String ERR_PASS_TITLE = "Passwords Was Wrong";
     final static private String FILE_NAME = "json_file.txt";
+    final static private String TAG = "omriLog";
     private Context context;
     private WifiManager wfManager;
     private FileJobs fileJob;
@@ -80,7 +81,7 @@ public class EditAccessPointActivity extends AppCompatActivity
                 String answer = task.execute("http://192.168.4.1/update_access_point_details",
                         this.apInfo.getAccessPointName(),
                         this.apInfo.getAccessPointPass()).get();
-                if(answer.equals("DONE\n"))
+                if(answer.equals("OK"))
                 {
                     Toast.makeText(this.context, "User Name & Password Saved Successfully", Toast.LENGTH_LONG).show();
                     startActivity(new Intent(EditAccessPointActivity.this, MainActivity.class));

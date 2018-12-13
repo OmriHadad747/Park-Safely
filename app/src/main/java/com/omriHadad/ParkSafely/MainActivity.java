@@ -43,7 +43,7 @@ enum fromWhere{onCreate, onReceive, updateConnectionOn, updateConnectionOff};
 
 public class MainActivity extends AppCompatActivity
 {
-    final static private String TAG = "main-activity";
+    final static private String TAG = "omriLog";
     final static private String FILE_NAME = "json_file.txt";
     final static private String permissions[] = {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
     private Context context;
