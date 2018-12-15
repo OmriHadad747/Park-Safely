@@ -10,7 +10,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-
 import java.io.File;
 
 public class FullImageActivity extends AppCompatActivity
@@ -32,7 +31,7 @@ public class FullImageActivity extends AppCompatActivity
         int position = i.getExtras().getInt("id");
         ImageAdapter adapter = new ImageAdapter(this);
         ImageView imageView = findViewById(R.id.image);
-        image =adapter.images.get(position);
+        image = adapter.images.get(position);
         Bitmap myBitmap = BitmapFactory.decodeFile(image.getAbsolutePath());
         //imageView.setImageURI(Uri.fromFile(a));
         imageView.setImageBitmap(myBitmap);

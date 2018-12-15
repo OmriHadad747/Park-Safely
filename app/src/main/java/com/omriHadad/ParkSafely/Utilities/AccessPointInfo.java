@@ -1,4 +1,4 @@
-package com.omriHadad.ParkSafely;
+package com.omriHadad.ParkSafely.Utilities;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

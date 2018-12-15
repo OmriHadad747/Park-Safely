@@ -70,10 +70,9 @@
                 android:background="@color/primary_color">
 
                 <ImageView
-                    android:id="@+id/wifi_image"
+                    android:id="@+id/wifi_img"
                     android:layout_width="64dp"
                     android:layout_height="64dp"
-                    android:background="@drawable/circle_background"
                     android:padding="10dp"
                     android:src="@drawable/ic_wifi_on" />
 
@@ -123,7 +122,6 @@
                 <ImageView
                     android:layout_width="64dp"
                     android:layout_height="64dp"
-                    android:background="@drawable/circle_background"
                     android:padding="10dp"
                     android:src="@drawable/ic_file_download" />
 
@@ -174,7 +172,6 @@
                 <ImageView
                     android:layout_width="64dp"
                     android:layout_height="64dp"
-                    android:background="@drawable/circle_background"
                     android:padding="10dp"
                     android:src="@drawable/ic_settings" />
 
@@ -225,7 +222,6 @@
                 <ImageView
                     android:layout_width="64dp"
                     android:layout_height="64dp"
-                    android:background="@drawable/circle_background"
                     android:padding="10dp"
                     android:src="@drawable/ic_photo_library_2" />
 

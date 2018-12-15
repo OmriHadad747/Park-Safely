@@ -11,9 +11,8 @@ double startX, startY, currX, currY;
 boolean initMeasure = false;
 boolean isParking = false;
 boolean isClientConnected = false;
-const char *accessPointName = "Park-Safely AP";
-const char *accessPointPass= "01234567";
-
+boolean hasNewPhotos_ = true;
+const char *accessPointName = "Park-Safely AP", *accessPointPass= "01234567";
 ESP8266WebServer accessPointServer(80);
 
 void chooseRange(int range)  /*Set the range to whatever is appropriate for your project*/
@@ -45,6 +44,14 @@ void chooseRange(int range)  /*Set the range to whatever is appropriate for your
       break;
     } 
   }
+}
+
+void hasNewPhotos()
+{
+  /*if(hasNewPhotos_)
+    accessPointServer.send(200, "text/html", "YES");
+  else
+    accessPointServer.send(200, "text/html", "NO");*/
 }
 
 void connectedOnOff()
@@ -160,6 +167,7 @@ void setup(void)
   accessPointServer.on("/start_end_detection", startEndDetection);
   accessPointServer.on("/update_access_point_details", updateAccessPointDetails);
   accessPointServer.on("/connected_on_off", connectedOnOff);
+  accessPointServer.on("/has_New_Photos", hasNewPhotos);
   accessPointServer.begin();
 
   if(!accel.begin())

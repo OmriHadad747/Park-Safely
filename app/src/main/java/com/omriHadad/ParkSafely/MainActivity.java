@@ -24,6 +24,12 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.omriHadad.ParkSafely.ServerTasks.HasNewPhotosTask;
+import com.omriHadad.ParkSafely.ServerTasks.StartEndDetectionTask;
+import com.omriHadad.ParkSafely.ServerTasks.UpdateOnConnectionTask;
+import com.omriHadad.ParkSafely.Utilities.AccessPointInfo;
+import com.omriHadad.ParkSafely.Utilities.FileJobs;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -37,10 +43,12 @@ public class MainActivity extends AppCompatActivity
 {
     final static private String TAG = "parkSafelyLog";
     final static private String FILE_NAME = "json_file.txt";
+    final static private String SERVER_ADDRS = "http://192.168.4.1/";
+    final static private int DISCONN_ATTEMPTS = 5;
+    final static private int CONN_ATTEMPTS = 10;
     final static private String permissions[] = {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
-    private Context context;
+    private static Context context;
     private static AccessPointInfo apInfo;
-    private File file;
     private FileJobs fileJob;
     private WifiManager wfManager ;
     private WifiBroadcastReceiver scanResultBroadcast;
@@ -66,29 +74,28 @@ public class MainActivity extends AppCompatActivity
 
         requestPermissions();
 
-        //initialize important variables
-        this.context = getApplicationContext();
+        /*initialize important variables*/
+        context = getApplicationContext();
         this.wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         this.scanResultBroadcast = new WifiBroadcastReceiver(this.wfManager);
         this.wifiBroadcast = new WifiBroadcastReceiver(this.wfManager);
-        this.apInfo = new AccessPointInfo();
-        this.fileJob = new FileJobs(this.context, this.FILE_NAME);
+        apInfo = new AccessPointInfo();
+        this.fileJob = new FileJobs(context, FILE_NAME);
 
+        this.fileHandler();  /*read or write JSON file to get/set access point name & password*/
         this.setIsConnected();  /*check if connected to park safely and sets the variable isConnected*/
-        this.fileHandler();  //read or write JSON file to get/set access point name & password
-        this.setWifiImage(fromWhere.onCreate);  //set Images depends on wifi connection status
-        this.setToolbar();  //set toolbar name
+        this.setWifiImg(fromWhere.onCreate);  /*set Images depends on wifi connection status*/
+        this.setCloneImg(fromWhere.onCreate);
+        this.setToolbar();  /*set toolbar name*/
 
     }
 
-    //===========================logical functions==================================================
+    /*===========================logical functions================================================*/
 
     private void requestPermissions()
     {
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)!=(PackageManager.PERMISSION_GRANTED))
-        {
             ActivityCompat.requestPermissions(this, permissions, 123);
-        }
     }
 
     private void fileHandler()
@@ -96,16 +103,16 @@ public class MainActivity extends AppCompatActivity
         if(!checkIfFileAlreadyExist())
         {
             File path = this.context.getFilesDir();
-            this.file = new File(path, FILE_NAME);  //create file for the first time
-            this.accessPointName = this.apInfo.getAccessPointName();
-            this.accessPointPass = this.apInfo.getAccessPointPass();
-            fileJob.writeJsonFile(this.apInfo, this.file);
+            File file = new File(path, FILE_NAME);
+            this.accessPointName = apInfo.getAccessPointName();
+            this.accessPointPass = apInfo.getAccessPointPass();
+            fileJob.writeJsonFile(apInfo, file);
         }
         else
         {
-            this.apInfo = fileJob.readJsonFile();
-            this.accessPointName = this.apInfo.getAccessPointName();
-            this.accessPointPass = this.apInfo.getAccessPointPass();
+            apInfo = fileJob.readJsonFile();
+            this.accessPointName = apInfo.getAccessPointName();
+            this.accessPointPass = apInfo.getAccessPointPass();
         }
     }
 
@@ -164,24 +171,26 @@ public class MainActivity extends AppCompatActivity
         try
         {
             UpdateOnConnectionTask task = new UpdateOnConnectionTask(state);
-            String answer = task.execute("http://192.168.4.1/connected_on_off").get();
+            String answer = task.execute(SERVER_ADDRS + "connected_on_off").get();
             if(answer.equals("OK"))
             {
                 if(state)
                 {
                     this.isConnected = true;
-                    setWifiImage(fromWhere.updateConnectionOn); /*update img*/
-                    Toast.makeText(this.context, "Connected To Park-Safely", Toast.LENGTH_LONG).show();
+                    setWifiImg(fromWhere.updateConnectionOn); /*update img*/
+                    setCloneImg(fromWhere.updateConnectionOn);
+                    Toast.makeText(context, "Connected To Park-Safely", Toast.LENGTH_LONG).show();
                     return true;
                 }
                 else if(!state)
                 {
                     this.isConnected = false;
-                    setWifiImage(fromWhere.updateConnectionOff);
+                    setWifiImg(fromWhere.updateConnectionOff);
+                    setCloneImg(fromWhere.updateConnectionOff);
                     this.wfManager.disconnect();
                     this.wfManager.disableNetwork(this.accessPointId);
                     this.wfManager.setWifiEnabled(false);
-                    Toast.makeText(this.context, "Disconnected From Park-Safely", Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, "Disconnected From Park-Safely", Toast.LENGTH_LONG).show();
                     return true;
                 }
             }
@@ -200,7 +209,28 @@ public class MainActivity extends AppCompatActivity
         return false;
     }
 
-    //===========================onClick functions==================================================
+    private boolean hasNewPhotos()
+    {
+        try
+        {
+            HasNewPhotosTask task = new HasNewPhotosTask();
+            String answer = task.execute(SERVER_ADDRS + "hasNewPhotos").get();
+            if(answer.equals("YES"))
+                return true;
+        }
+        catch (ExecutionException e)
+        {
+            e.printStackTrace();
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    /*===========================onClick functions================================================*/
 
     public void photoGalleryButtonOnClick(View v)
     {
@@ -222,9 +252,9 @@ public class MainActivity extends AppCompatActivity
         }
         else
         {
-            int updateAttempts = 20;
-            while(!updateServerAboutConnection(false) &&  updateAttempts-- > 0)
-                Log.d(TAG, "disconnect - loop number: " + updateAttempts);
+            int attempts = DISCONN_ATTEMPTS;
+            while(!updateServerAboutConnection(false) &&  attempts-- > 0)
+                Log.d(TAG, "disconnect - attempt number: " + attempts);
         }
     }
 
@@ -235,25 +265,25 @@ public class MainActivity extends AppCompatActivity
             if(this.isConnected)
             {
                 StartEndDetectionTask task = new StartEndDetectionTask(this.isDetect);
-                String answer = task.execute("http://192.168.4.1/start_end_detection").get();
+                String answer = task.execute(SERVER_ADDRS + "start_end_detection").get();
                 if (answer.equals("OK"))
                 {
                     if (this.isDetect)
                     {
                         this.isDetect = false;
-                        Toast.makeText(this.context, "Detection Disabled", Toast.LENGTH_LONG).show();
+                        Toast.makeText(context, "Detection Disabled", Toast.LENGTH_LONG).show();
                     }
                     else
                     {
                         this.isDetect = true;
-                        Toast.makeText(this.context, "Detection Enabled", Toast.LENGTH_LONG).show();
+                        Toast.makeText(context, "Detection Enabled", Toast.LENGTH_LONG).show();
                     }
                 }
                 else if(answer.equals("ERROR"))
-                    Toast.makeText(this.context, "Detection Was Not Enabled/Disabled, Try Again", Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, "Detection Was Not Enabled/Disabled, Try Again", Toast.LENGTH_LONG).show();
             }
             else
-                Toast.makeText(this.context, "Device Is Not Connected To Park-Safely", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "Device Is Not Connected To Park-Safely", Toast.LENGTH_LONG).show();
         }
         catch (ExecutionException e)
         {
@@ -265,32 +295,74 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    //===========================setters & getters==================================================
-
-    protected void setWifiImage(fromWhere howCallMe)
+    public void cloneOnClick(View v)
     {
-        ImageView wifiImg = findViewById(R.id.wifi_image);
-        TextView wifiText = findViewById(R.id.wifi_text);
 
-        switch(howCallMe)
+    }
+
+    /*===========================setters & getters================================================*/
+
+    protected void setCloneImg(fromWhere whoCallMe)
+    {
+        ImageView cloneImg = findViewById(R.id.clone_img);
+
+        switch(whoCallMe)
         {
             case onCreate:
             {
-                if(isConnected)
+                if(this.isConnected && hasNewPhotos())
+                {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                        cloneImg.setImageDrawable(getDrawable(R.drawable.ic_file_download_red));
+                }
+                else
+                {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                        cloneImg.setImageDrawable(getDrawable(R.drawable.ic_file_download));
+                }
+                break;
+            }
+            case updateConnectionOn:
+            {
+                if(hasNewPhotos())
+                {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                        cloneImg.setImageDrawable(getDrawable(R.drawable.ic_file_download_red));
+                }
+                break;
+            }
+            case updateConnectionOff:
+            {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                    cloneImg.setImageDrawable(getDrawable(R.drawable.ic_file_download));
+            }
+        }
+    }
+
+    protected void setWifiImg(fromWhere whoCallMe)
+    {
+        ImageView wifiImg = findViewById(R.id.wifi_img);
+        TextView wifiTxt = findViewById(R.id.wifi_txt);
+
+        switch(whoCallMe)
+        {
+            case onCreate:
+            {
+                if(this.isConnected)
                 {
                     int attempts = 20;
                     while(!updateServerAboutConnection(true) &&  attempts-- > 0)
                         Log.d(TAG, "connect - attempt number: " + attempts);
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                         wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
-                    wifiText.setText("Tap To Disconnect");
+                    wifiTxt.setText("Tap To Disconnect");
                     registerReceiver(this.wifiBroadcast, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
                 }
                 else
                 {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                         wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
-                    wifiText.setText("Tap To Connect");
+                    wifiTxt.setText("Tap To Connect");
                 }
                 break;
             }
@@ -298,7 +370,7 @@ public class MainActivity extends AppCompatActivity
             {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                     wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
-                wifiText.setText("Tap To Disconnect");
+                wifiTxt.setText("Tap To Disconnect");
                 registerReceiver(this.wifiBroadcast, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
                 break;
             }
@@ -306,7 +378,7 @@ public class MainActivity extends AppCompatActivity
             {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                     wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
-                wifiText.setText("Tap To Connect");
+                wifiTxt.setText("Tap To Connect");
                 unregisterReceiver(this.wifiBroadcast);
                 break;
             }
@@ -316,7 +388,7 @@ public class MainActivity extends AppCompatActivity
                 {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                         wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
-                    wifiText.setText("Tap To Connect");
+                    wifiTxt.setText("Tap To Connect");
                     unregisterReceiver(this.wifiBroadcast);
                 }
                 break;
@@ -422,7 +494,7 @@ public class MainActivity extends AppCompatActivity
                     if (sr.SSID.equals(getAccessPointName()))  /*if the desirable access point founded*/
                     {
                         enableNetwork();
-                        int attempts = 20;
+                        int attempts = CONN_ATTEMPTS;
                         while(!updateServerAboutConnection(true) && attempts-- > 0)
                             Log.d(TAG, "connect - attempt number: " + attempts);
                         unregisterReceiver(scanResultBroadcast);  /*remove scan result event listener*/
@@ -453,7 +525,7 @@ public class MainActivity extends AppCompatActivity
             }
             else if (ConnectivityManager.CONNECTIVITY_ACTION.equals(action))
             {
-                setWifiImage(fromWhere.onReceive);
+                setWifiImg(fromWhere.onReceive);
                 return;
             }
         }

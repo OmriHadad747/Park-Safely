@@ -23,7 +23,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="jar:file:/Applications/Android%20Studio.app/Contents/plugins/android/lib/android.jar!/images/material_design_icons/action/ic_home_black_24dp.xml" />
+                                      <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/file/ic_file_download_black_24dp.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -33,10 +33,9 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="assetSourceType" value="FILE" />
-                            <entry key="color" value="ffffff" />
-                            <entry key="outputName" value="ic_wifi_off" />
-                            <entry key="sourceFile" value="$USER_HOME$/Downloads/wifi-off.svg" />
+                            <entry key="color" value="ff091f" />
+                            <entry key="outputName" value="ic_file_download_red" />
+                            <entry key="sourceFile" value="C:\Users\omriha\Downloads\wifi-off.svg" />
                           </map>
                         </option>
                       </PersistentState>

@@ -1,4 +1,4 @@
-package com.omriHadad.ParkSafely;
+package com.omriHadad.ParkSafely.ServerTasks;
 
 import android.os.AsyncTask;
 import org.json.JSONException;

@@ -10,6 +10,11 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.omriHadad.ParkSafely.ServerTasks.UpdateAccessPointTask;
+import com.omriHadad.ParkSafely.Utilities.AccessPointInfo;
+import com.omriHadad.ParkSafely.Utilities.FileJobs;
+
 import java.io.File;
 import java.util.concurrent.ExecutionException;
 
@@ -20,7 +25,8 @@ public class EditAccessPointActivity extends AppCompatActivity
     final static private String ERR_CONNECTION_TITLE = "Device Is Not Connected";
     final static private String ERR_PASS_TITLE = "Passwords Was Wrong";
     final static private String FILE_NAME = "json_file.txt";
-    final static private String TAG = "Park-Safely Log";
+    final static private String TAG = "ParkSafelyLog";
+    final static private String SERVER_ADDRS = "http://192.168.4.1/";
     private Context context;
     private WifiManager wfManager;
     private FileJobs fileJob;
@@ -72,11 +78,11 @@ public class EditAccessPointActivity extends AppCompatActivity
             this.apInfo.setAccessPointName(this.newName.getText().toString());
             this.apInfo.setAccessPointPass(this.newPassword.getText().toString());
             File path = this.context.getFilesDir();
-            this.fileJob.writeJsonFile(this.apInfo, new File(path, this.FILE_NAME)); //update json file with new values
+            this.fileJob.writeJsonFile(this.apInfo, new File(path, FILE_NAME)); //update json file with new values
             UpdateAccessPointTask task = new UpdateAccessPointTask();
             try
             {
-                String answer = task.execute("http://192.168.4.1/update_access_point_details",
+                String answer = task.execute(SERVER_ADDRS + "update_access_point_details",
                         this.apInfo.getAccessPointName(),
                         this.apInfo.getAccessPointPass()).get();
                 if(answer.equals("OK"))
