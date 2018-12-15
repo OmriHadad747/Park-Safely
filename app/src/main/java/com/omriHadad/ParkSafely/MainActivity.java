@@ -24,7 +24,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -49,7 +48,7 @@ public class MainActivity extends AppCompatActivity
     private int accessPointId;
     private String accessPointName;
     private String accessPointPass;
-    private boolean detectionSwitch = true;
+    private boolean isDetect = false;
     private boolean isConnected;
 
     @Override
@@ -162,24 +161,20 @@ public class MainActivity extends AppCompatActivity
 
     private boolean updateServerAboutConnection(boolean state)
     {
-        UpdateOnConnectionTask task = new UpdateOnConnectionTask();
         try
         {
-            if(state)
+            UpdateOnConnectionTask task = new UpdateOnConnectionTask(state);
+            String answer = task.execute("http://192.168.4.1/connected_on_off").get();
+            if(answer.equals("OK"))
             {
-                String ans = task.execute("http://192.168.4.1/connected_on").get();
-                if(ans.equals("DONE\n"))
+                if(state)
                 {
                     this.isConnected = true;
                     setWifiImage(fromWhere.updateConnectionOn); /*update img*/
                     Toast.makeText(this.context, "Connected To Park-Safely", Toast.LENGTH_LONG).show();
                     return true;
                 }
-            }
-            else
-            {
-                String ans = task.execute("http://192.168.4.1/connected_off").get();
-                if(ans.equals("DONE\n"))
+                else if(!state)
                 {
                     this.isConnected = false;
                     setWifiImage(fromWhere.updateConnectionOff);
@@ -190,6 +185,8 @@ public class MainActivity extends AppCompatActivity
                     return true;
                 }
             }
+            else if(answer.equals("ERROR"))
+                return false;
         }
         catch (ExecutionException e)
         {
@@ -233,52 +230,38 @@ public class MainActivity extends AppCompatActivity
 
     public void startEndDetectionOnClick(View v)
     {
-        StartEndDetectionTask task = new StartEndDetectionTask();
-        String ans;
-
-        if (this.detectionSwitch)
+        try
         {
-            try
+            if(this.isConnected)
             {
-                ans = task.execute("http://192.168.4.1/start_detection").get();
-                if (ans.equals("DONE\n"))
+                StartEndDetectionTask task = new StartEndDetectionTask(this.isDetect);
+                String answer = task.execute("http://192.168.4.1/start_end_detection").get();
+                if (answer.equals("OK"))
                 {
-                    this.detectionSwitch = false;
-                    Toast.makeText(this.context, "Detection Enabled", Toast.LENGTH_LONG).show();
+                    if (this.isDetect)
+                    {
+                        this.isDetect = false;
+                        Toast.makeText(this.context, "Detection Disabled", Toast.LENGTH_LONG).show();
+                    }
+                    else
+                    {
+                        this.isDetect = true;
+                        Toast.makeText(this.context, "Detection Enabled", Toast.LENGTH_LONG).show();
+                    }
                 }
-                else
-                    Toast.makeText(this.context, "Device Not Found", Toast.LENGTH_LONG).show();
+                else if(answer.equals("ERROR"))
+                    Toast.makeText(this.context, "Detection Was Not Enabled/Disabled, Try Again", Toast.LENGTH_LONG).show();
             }
-            catch (ExecutionException e)
-            {
-                e.printStackTrace();
-            }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();
-            }
+            else
+                Toast.makeText(this.context, "Device Is Not Connected To Park-Safely", Toast.LENGTH_LONG).show();
         }
-        else
+        catch (ExecutionException e)
         {
-            try
-            {
-                ans = task.execute("http://192.168.4.1/end_detection").get();
-                if (ans.equals("DONE\n"))
-                {
-                    detectionSwitch = true;
-                    Toast.makeText(this.context, "Detection Disabled", Toast.LENGTH_LONG).show();
-                }
-                else
-                    Toast.makeText(this.context, "Device Not Found", Toast.LENGTH_LONG).show();
-            }
-            catch (ExecutionException e)
-            {
-                e.printStackTrace();
-            }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();
-            }
+            e.printStackTrace();
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
         }
     }
 
@@ -295,9 +278,9 @@ public class MainActivity extends AppCompatActivity
             {
                 if(isConnected)
                 {
-                    int updateAttempts = 20;
-                    while(!updateServerAboutConnection(true) &&  updateAttempts-- > 0)
-                        Log.d(TAG, "connect - loop number: " + updateAttempts);
+                    int attempts = 20;
+                    while(!updateServerAboutConnection(true) &&  attempts-- > 0)
+                        Log.d(TAG, "connect - attempt number: " + attempts);
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                         wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
                     wifiText.setText("Tap To Disconnect");
@@ -387,6 +370,11 @@ public class MainActivity extends AppCompatActivity
         return apInfo;
     }
 
+    protected Context getContext()
+    {
+        return this.context;
+    }
+
     //===========================broadcast receiver definition======================================
 
     public class WifiBroadcastReceiver extends BroadcastReceiver  /*this class implements broadcast receiver*/
@@ -434,9 +422,9 @@ public class MainActivity extends AppCompatActivity
                     if (sr.SSID.equals(getAccessPointName()))  /*if the desirable access point founded*/
                     {
                         enableNetwork();
-                        int updateAttempts = 20;
-                        while(!updateServerAboutConnection(true) &&  updateAttempts-- > 0)
-                            Log.d(TAG, "connect - loop number: " + updateAttempts);
+                        int attempts = 20;
+                        while(!updateServerAboutConnection(true) && attempts-- > 0)
+                            Log.d(TAG, "connect - attempt number: " + attempts);
                         unregisterReceiver(scanResultBroadcast);  /*remove scan result event listener*/
                         return;
                     }

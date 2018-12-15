@@ -1,86 +1,77 @@
 package com.omriHadad.ParkSafely;
 
 import android.os.AsyncTask;
-import android.util.Log;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-
-import java.io.BufferedReader;
+import org.json.JSONException;
+import org.json.JSONObject;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class StartEndDetectionTask extends AsyncTask<String, Void, String>
 {
-    final static private int timeoutSocket = 5000;
-    final static private int timeoutConnection = 3000;
+    private static boolean isDetect;
 
-    public String execTask(String url)
+    public StartEndDetectionTask(boolean bool)
     {
-        String result=null;
-        HttpParams httpParameters = new BasicHttpParams();
-        //TODO - check if the timeout connection is necessary
-        HttpConnectionParams.setConnectionTimeout(httpParameters, timeoutConnection);
-        HttpConnectionParams.setSoTimeout(httpParameters, timeoutSocket);
-        HttpClient httpclient = new DefaultHttpClient(httpParameters);
-        HttpGet httpget = new HttpGet(url);
-        HttpResponse response;
-        try
-        {
-            response = httpclient.execute(httpget);
-            HttpEntity entity = response.getEntity();
-            if (entity != null)
-            {
-                InputStream instream = entity.getContent();
-                result= convertStreamToString(instream);
-                instream.close();
-                return result;
-            }
-        }
-        catch (Exception e)
-        {
-            String se = e.getMessage();
-            Log.d("myTag", se);
-            return "Nok Error";
-        }
-        return result;
+        this.isDetect = bool;
     }
 
-    private String convertStreamToString(InputStream is)
+    private static JSONObject buildJsonObject()
     {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        StringBuilder sb = new StringBuilder();
-
-        String line = null;
+        JSONObject json = new JSONObject();
         try
         {
-            while ((line = reader.readLine()) != null)
-                sb.append(line + "\n");
+            if (isDetect)
+                json.accumulate("state", "false");
+            else
+                json.accumulate("state", "true");
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
 
+        return json;
+    }
+
+    private void setPostRequestContent(HttpURLConnection connection, JSONObject json) throws IOException
+    {
+        OutputStream os = connection.getOutputStream();
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+        writer.write(json.toString());
+        writer.flush();
+        writer.close();
+        os.close();
+    }
+
+    private String execTask(String url_)
+    {
+        try
+        {
+            URL url = new URL(url_);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            //TODO - check if the next line is necessary
+            connection.setRequestProperty("Content-Type", "application/json; charset = utf-8");
+            JSONObject json = buildJsonObject();
+            setPostRequestContent(connection, json);
+            connection.connect();
+            return connection.getResponseMessage();
+        }
+        catch (MalformedURLException e)
+        {
+            e.printStackTrace();
         }
         catch (IOException e)
         {
             e.printStackTrace();
         }
-        finally
-        {
-            try
-            {
-                is.close();
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-        }
-        return sb.toString();
+
+        return "ERROR";
     }
 
     @Override

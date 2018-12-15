@@ -16,7 +16,7 @@ import java.io.File;
 public class FullImageActivity extends AppCompatActivity
 {
     RelativeLayout top_bar;
-    RelativeLayout buttom_bar;
+    RelativeLayout bottom_bar;
     File image;
     boolean hide;
 
@@ -28,7 +28,7 @@ public class FullImageActivity extends AppCompatActivity
         hide=true;
         Intent i=getIntent();
         top_bar=findViewById(R.id.top_bar);
-        buttom_bar=findViewById(R.id.buttom_bar);
+        bottom_bar =findViewById(R.id.buttom_bar);
         int position = i.getExtras().getInt("id");
         ImageAdapter adapter = new ImageAdapter(this);
         ImageView imageView = findViewById(R.id.image);
@@ -73,16 +73,17 @@ public class FullImageActivity extends AppCompatActivity
             }
         }
     }
+
     public void imageOnClick(View v){
         if(hide){
             hide=false;
             top_bar.setVisibility(View.INVISIBLE);
-            buttom_bar.setVisibility(View.INVISIBLE);
+            bottom_bar.setVisibility(View.INVISIBLE);
         }
         else{
             hide=true;
             top_bar.setVisibility(View.VISIBLE);
-            buttom_bar.setVisibility(View.VISIBLE);
+            bottom_bar.setVisibility(View.VISIBLE);
 
         }
     }

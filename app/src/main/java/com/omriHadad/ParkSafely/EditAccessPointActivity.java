@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import java.io.File;
 import java.util.concurrent.ExecutionException;
 
@@ -74,7 +73,6 @@ public class EditAccessPointActivity extends AppCompatActivity
             this.apInfo.setAccessPointPass(this.newPassword.getText().toString());
             File path = this.context.getFilesDir();
             this.fileJob.writeJsonFile(this.apInfo, new File(path, this.FILE_NAME)); //update json file with new values
-
             UpdateAccessPointTask task = new UpdateAccessPointTask();
             try
             {
@@ -88,7 +86,7 @@ public class EditAccessPointActivity extends AppCompatActivity
                 }
                 else if(answer.equals("ERROR"))
                 {
-                    Toast.makeText(this.context, "User Name & Password Saved Unsuccessfully, Try Again", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this.context, "User Name & Password Unsaved successfully, Try Again", Toast.LENGTH_LONG).show();
                     startActivity(new Intent(EditAccessPointActivity.this, EditAccessPointActivity.class));
                 }
             }

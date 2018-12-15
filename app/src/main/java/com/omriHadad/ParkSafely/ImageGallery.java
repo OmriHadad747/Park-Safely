@@ -32,7 +32,7 @@ public class ImageGallery extends AppCompatActivity
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id)
             {
-                Intent i = new Intent(getApplicationContext(),FullImageActivity.class);
+                Intent i = new Intent(getApplicationContext(), FullImageActivity.class);
                 i.putExtra("id",position);
                 startActivity(i);
             }

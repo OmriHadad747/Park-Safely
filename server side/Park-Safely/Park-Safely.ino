@@ -4,6 +4,7 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_ADXL345_U.h>
 #include <math.h>
+#include <ArduinoJson.h>
 
 Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
 double startX, startY, currX, currY;
@@ -12,6 +13,7 @@ boolean isParking = false;
 boolean isClientConnected = false;
 const char *accessPointName = "Park-Safely AP";
 const char *accessPointPass= "01234567";
+
 ESP8266WebServer accessPointServer(80);
 
 void chooseRange(int range)  /*Set the range to whatever is appropriate for your project*/
@@ -33,52 +35,85 @@ void chooseRange(int range)  /*Set the range to whatever is appropriate for your
     case 4:
     {
       accel.setRange(ADXL345_RANGE_4_G);
-      Serial.println("chooseRange()succeeded");
+      Serial.println("ChooseRange()Succeeded");
       break;
     }
     case 2:
     {
       accel.setRange(ADXL345_RANGE_2_G);
-      Serial.println("chooseRange()succeeded");
+      Serial.println("ChooseRange()Succeeded");
       break;
     } 
   }
 }
 
-void ConnectedOff()
+void connectedOnOff()
 {
-  isClientConnected = false;
-  Serial.println("client disconnected");
-  accessPointServer.send(200, "text/html", "DONE");
-}
-
-void ConnectedOn()
-{
-   isClientConnected = true;
-   Serial.println("client connected");
-   accessPointServer.send(200, "text/html", "DONE");
+  StaticJsonBuffer<200> jsonBuffer;
+  String jsonStr = "";
+  jsonStr += accessPointServer.arg("plain");
+  Serial.println(jsonStr);
+  JsonObject& json = jsonBuffer.parseObject(jsonStr);
+  if(!json.success())
+    Serial.println("Json Parse Is Failed");
+  else
+  {
+    String state = json["state"];
+    if(state == "true")
+    {
+      isClientConnected = true;
+      Serial.println("Client Connected");
+      accessPointServer.send(200, "text/html", "OK");
+    }
+    else if(state == "false")
+    {
+      isClientConnected = false;
+      Serial.println("Client Disconnected");
+      accessPointServer.send(200, "text/html", "OK");
+    }
+  }
 }
 
 void updateAccessPointDetails()
 {
-  String message = "Body received:\n";
-  message += accessPointServer.arg("plain");
-  message += "\n";
-  Serial.println(message);
+  StaticJsonBuffer<200> jsonBuffer;
+  String jsonStr = "";
+  jsonStr += accessPointServer.arg("plain");
+  JsonObject& json = jsonBuffer.parseObject(jsonStr);
+  if(!json.success())
+    Serial.println("Json Parse Is Failed");
+  else
+  {
+    accessPointServer.send(200, "text/html", "OK");
+    //TODO - save the detailes to SD card
+  }
 }
 
-void startDetection()
+void startEndDetection()
 {
-  isParking = true;
-  accessPointServer.send(200, "text/html", "DONE");
-  Serial.println("Detection started");
-}
-
-void endDetection()
-{
-  isParking = false;
-  accessPointServer.send(200, "text/html", "DONE");
-  Serial.println("Detection ended");
+  StaticJsonBuffer<200> jsonBuffer;
+  String jsonStr = "";
+  jsonStr += accessPointServer.arg("plain");
+  Serial.println(jsonStr);
+  JsonObject& json = jsonBuffer.parseObject(jsonStr);
+  if(!json.success())
+    Serial.println("Json Parse Is Failed");
+  else
+  {
+    String state = json["state"];
+    if(state == "true")
+    {
+      isParking = true;
+      Serial.println("Detection started");
+      accessPointServer.send(200, "text/html", "OK");
+    }
+    else if(state == "false")
+    {
+      isParking = false;
+      Serial.println("Detection ended");
+      accessPointServer.send(200, "text/html", "OK");
+    }
+  }
 }
 
 void printAccelDate(sensors_event_t event)   /*Display the results (acceleration is measured in m/s^2)*/
@@ -122,11 +157,9 @@ void setup(void)
   Serial.begin(9600);
 
   WiFi.softAP(accessPointName, accessPointPass);  /*Initialise the access point*/
-  accessPointServer.on("/start_detection", startDetection);
-  accessPointServer.on("/end_detection", endDetection);
+  accessPointServer.on("/start_end_detection", startEndDetection);
   accessPointServer.on("/update_access_point_details", updateAccessPointDetails);
-  accessPointServer.on("/connected_on", ConnectedOn);
-  accessPointServer.on("/connected_off", ConnectedOff);
+  accessPointServer.on("/connected_on_off", connectedOnOff);
   accessPointServer.begin();
 
   if(!accel.begin())
