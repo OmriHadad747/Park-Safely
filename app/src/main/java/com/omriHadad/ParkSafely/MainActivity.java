@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity
     final static private int DISCONN_ATTEMPTS = 5;
     final static private int CONN_ATTEMPTS = 10;
     final static private String permissions[] = {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
-    private static Context context;
+    private Context context;
     private static AccessPointInfo apInfo;
     private FileJobs fileJob;
     private WifiManager wfManager ;
@@ -83,12 +83,12 @@ public class MainActivity extends AppCompatActivity
         requestPermissions();
 
         /*initialize important variables*/
-        context = getApplicationContext();
-        this.wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        this.context = getApplicationContext();
+        this.wfManager = (WifiManager) this.context.getSystemService(Context.WIFI_SERVICE);
         this.scanResultBroadcast = new WifiBroadcastReceiver(this.wfManager);
         this.wifiBroadcast = new WifiBroadcastReceiver(this.wfManager);
         apInfo = new AccessPointInfo();
-        this.fileJob = new FileJobs(context, FILE_NAME);
+        this.fileJob = new FileJobs(this.context, FILE_NAME);
 
         this.fileHandler();  /*read or write JSON file to get/set access point name & password*/
         this.setIsConnected();  /*check if connected to park safely and sets the variable isConnected*/
@@ -112,10 +112,9 @@ public class MainActivity extends AppCompatActivity
         if(!checkIfFileAlreadyExist())
         {
             File path = this.context.getFilesDir();
-            File file = new File(path, FILE_NAME);
+            fileJob.writeJsonFile(apInfo, new File(path, FILE_NAME));
             this.accessPointName = apInfo.getAccessPointName();
             this.accessPointPass = apInfo.getAccessPointPass();
-            fileJob.writeJsonFile(apInfo, file);
         }
         else
         {
@@ -127,27 +126,22 @@ public class MainActivity extends AppCompatActivity
 
     private boolean checkIfFileAlreadyExist()
     {
-        FileInputStream streamIn = null;
         try
         {
-            streamIn = this.context.openFileInput(FILE_NAME);
-            if (streamIn != null)
+            FileInputStream fInStream = this.context.openFileInput(FILE_NAME);
+            if (fInStream != null)
             {
-                try
-                {
-                    streamIn.close();
-                    return true;
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
+                fInStream.close();
+                return true;
             }
         }
         catch (FileNotFoundException e)
         {
             e.printStackTrace();
-            return false;
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
         }
 
         return false;
@@ -189,7 +183,7 @@ public class MainActivity extends AppCompatActivity
                     this.setWifiImg(fromWhere.updateConnectionOn); /*update wifi img*/
                     this.setCloneImg(fromWhere.updateConnectionOn); /*update clone img*/
                     this.setDetectionBtnColor(fromWhere.updateConnectionOn); /*update start end detection color*/
-                    Toast.makeText(context, "Connected To Park-Safely", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this.context, "Connected To Park-Safely", Toast.LENGTH_SHORT).show();
                     return true;
                 }
                 else if(!state)
@@ -201,7 +195,7 @@ public class MainActivity extends AppCompatActivity
                     this.wfManager.disconnect();
                     this.wfManager.disableNetwork(this.accessPointId);
                     this.wfManager.setWifiEnabled(false);
-                    Toast.makeText(context, "Disconnected From Park-Safely", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this.context, "Disconnected From Park-Safely", Toast.LENGTH_SHORT).show();
                     return true;
                 }
             }
@@ -281,20 +275,20 @@ public class MainActivity extends AppCompatActivity
                     {
                         this.isDetect = false;
                         this.setDetectionBtnColor(fromWhere.startEndDetectionOff);
-                        Toast.makeText(context, "Detection Disabled", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this.context, "Detection Disabled", Toast.LENGTH_SHORT).show();
                     }
                     else
                     {
                         this.isDetect = true;
                         this.setDetectionBtnColor(fromWhere.startEndDetectionOn);
-                        Toast.makeText(context, "Detection Enabled", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this.context, "Detection Enabled", Toast.LENGTH_SHORT).show();
                     }
                 }
                 else if(answer.equals("ERROR"))
-                    Toast.makeText(context, "Detection Was Not Enabled/Disabled, Try Again", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this.context, "Detection Was Not Enabled/Disabled, Try Again", Toast.LENGTH_LONG).show();
             }
             else
-                Toast.makeText(context, "Device Is Not Connected To Park-Safely", Toast.LENGTH_LONG).show();
+                Toast.makeText(this.context, "Device Is Not Connected To Park-Safely", Toast.LENGTH_SHORT).show();
         }
         catch (ExecutionException e)
         {
@@ -308,7 +302,12 @@ public class MainActivity extends AppCompatActivity
 
     public void cloneOnClick(View v)
     {
-
+        if(this.isConnected)
+        {
+            //TODO
+        }
+        else
+            Toast.makeText(this.context, "Device Is Not Connected To Park-Safely", Toast.LENGTH_SHORT).show();
     }
 
     /*===========================setters & getters================================================*/
@@ -399,11 +398,8 @@ public class MainActivity extends AppCompatActivity
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                         cloneImg.setImageDrawable(getDrawable(R.drawable.ic_file_download_red));
 
-                    Toast.makeText(context, "You Have New Photos To Clone", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this.context, "You Have New Photos To Clone", Toast.LENGTH_SHORT).show();
                 }
-                else
-                    Toast.makeText(context, "There Are Not New Photos To Clone", Toast.LENGTH_SHORT).show();
-
                 break;
             }
             case updateConnectionOff:
@@ -492,7 +488,7 @@ public class MainActivity extends AppCompatActivity
 
     private void setIsConnected()
     {
-        if(this.apInfo.isConnectedToParkSafely(this.wfManager, this.context))
+        if(apInfo.isConnectedToParkSafely(this.wfManager, this.context))
         {
             WifiInfo wfInfo = this.wfManager.getConnectionInfo();
             if(wfInfo != null)

@@ -29,19 +29,19 @@ public class FileJobs
         String json = "";
         try
         {
-            InputStream inputStream = this.context.openFileInput(fileName);
-            if(inputStream != null)
+            InputStream inStream = this.context.openFileInput(fileName);
+            if(inStream != null)
             {
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                InputStreamReader inStreamReader = new InputStreamReader(inStream);
+                BufferedReader buffered = new BufferedReader(inStreamReader);
                 String line = "";
-                StringBuilder stringBuilder = new StringBuilder();
+                StringBuilder sb = new StringBuilder();
 
-                while ((line = bufferedReader.readLine()) != null)
-                    stringBuilder.append(line);
+                while ((line = buffered.readLine()) != null)
+                    sb.append(line);
 
-                inputStream.close();
-                json = stringBuilder.toString();
+                inStream.close();
+                json = sb.toString();
             }
         }
         catch (FileNotFoundException e)
@@ -60,8 +60,8 @@ public class FileJobs
     {
         try
         {
-            FileOutputStream streamOut = new FileOutputStream(file);
-            streamOut.write(JSON.toJSONString(apInfo).getBytes());
+            FileOutputStream fOutStream = new FileOutputStream(file);
+            fOutStream.write(JSON.toJSONString(apInfo).getBytes());
         }
         catch (IOException e)
         {

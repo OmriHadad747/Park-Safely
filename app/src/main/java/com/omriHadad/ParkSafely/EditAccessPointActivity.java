@@ -37,14 +37,14 @@ public class EditAccessPointActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_access_point);
-        context = getApplicationContext();
 
+        context = getApplicationContext();
         this.apInfo = MainActivity.getApInfo();
-        this.fileJob = new FileJobs(this.context, this.FILE_NAME);
+        this.fileJob = new FileJobs(this.context, FILE_NAME);
         this.apInfo = fileJob.readJsonFile();
 
         WifiManager wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        if(!apInfo.isConnectedToParkSafely(wfManager, this.context))
+        if(!this.apInfo.isConnectedToParkSafely(wfManager, this.context))
             showMessage(ERR_CONNECTION_TITLE);
     }
 
@@ -81,7 +81,8 @@ public class EditAccessPointActivity extends AppCompatActivity
             UpdateAccessPointTask task = new UpdateAccessPointTask();
             try
             {
-                String answer = task.execute(SERVER_ADDRS + "update_access_point_details",
+                String answer = task.execute(
+                        SERVER_ADDRS + "update_access_point_details",
                         this.apInfo.getAccessPointName(),
                         this.apInfo.getAccessPointPass()).get();
                 if(answer.equals("DONE\n"))
@@ -108,8 +109,10 @@ public class EditAccessPointActivity extends AppCompatActivity
 
     public void cancelButton(View v)
     {
-        Toast.makeText(this.context, "Edit Access Point Configuration Was Canceled", Toast.LENGTH_LONG).show();
-        startActivity(new Intent(EditAccessPointActivity.this, SettingsActivity.class));
+        Toast.makeText(this.context, "Edit Access Point Configuration Was Canceled", Toast.LENGTH_SHORT).show();
+        final Intent goSettingIntent = new Intent(EditAccessPointActivity.this, SettingsActivity.class);
+        goSettingIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(goSettingIntent);
     }
 
     //===========================messages function==================================================

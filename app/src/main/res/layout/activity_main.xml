@@ -20,10 +20,11 @@
         android:layout_height="70dp"
         android:layout_margin="15dp"
         android:clickable="true"
+        android:elevation="3dp"
+        android:foreground="?android:attr/selectableItemBackground"
         android:onClick="startEndDetectionOnClick"
         android:translationZ="5dp"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="3dp">
+        app:cardCornerRadius="20dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
