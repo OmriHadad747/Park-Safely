@@ -56,19 +56,16 @@ public class FileJobs
         return gson.fromJson(json, AccessPointInfo.class);
     }
 
-    public boolean writeJsonFile(AccessPointInfo apInfo, File file)
+    public void writeJsonFile(AccessPointInfo apInfo, File file)
     {
         try
         {
             FileOutputStream streamOut = new FileOutputStream(file);
             streamOut.write(JSON.toJSONString(apInfo).getBytes());
-            return true;
         }
         catch (IOException e)
         {
             e.printStackTrace();
         }
-
-        return false;
     }
 }

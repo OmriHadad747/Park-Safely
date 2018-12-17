@@ -20,15 +20,14 @@ import java.util.concurrent.ExecutionException;
 
 public class EditAccessPointActivity extends AppCompatActivity
 {
+    final static private String TAG = "ParkSafelyLog";
     final static private String ERR_CONNECTION = "In order to set device username and password you must be connected to the PS-system, please connect to the device to continue";
     final static private String ERR_PASS = "Something with your inputted passwords was wrong, please do it again";
     final static private String ERR_CONNECTION_TITLE = "Device Is Not Connected";
     final static private String ERR_PASS_TITLE = "Passwords Was Wrong";
     final static private String FILE_NAME = "json_file.txt";
-    final static private String TAG = "ParkSafelyLog";
     final static private String SERVER_ADDRS = "http://192.168.4.1/";
     private Context context;
-    private WifiManager wfManager;
     private FileJobs fileJob;
     private AccessPointInfo apInfo;
     private EditText newName, newPassword, confirmNewPassword;
@@ -40,11 +39,11 @@ public class EditAccessPointActivity extends AppCompatActivity
         setContentView(R.layout.activity_edit_access_point);
         context = getApplicationContext();
 
-        this.wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         this.apInfo = MainActivity.getApInfo();
         this.fileJob = new FileJobs(this.context, this.FILE_NAME);
         this.apInfo = fileJob.readJsonFile();
 
+        WifiManager wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         if(!apInfo.isConnectedToParkSafely(wfManager, this.context))
             showMessage(ERR_CONNECTION_TITLE);
     }
@@ -61,9 +60,9 @@ public class EditAccessPointActivity extends AppCompatActivity
 
     private void getViewValues()
     {
-        newName = (EditText)findViewById(R.id.editText);
-        newPassword = (EditText)findViewById(R.id.editPass);
-        confirmNewPassword = (EditText)findViewById(R.id.confirmPass);
+        newName = findViewById(R.id.editText);
+        newPassword = findViewById(R.id.editPass);
+        confirmNewPassword = findViewById(R.id.confirmPass);
     }
 
     //===========================onClick functions==================================================
