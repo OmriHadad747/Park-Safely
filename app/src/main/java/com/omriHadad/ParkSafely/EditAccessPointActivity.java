@@ -85,7 +85,7 @@ public class EditAccessPointActivity extends AppCompatActivity
                 String answer = task.execute(SERVER_ADDRS + "update_access_point_details",
                         this.apInfo.getAccessPointName(),
                         this.apInfo.getAccessPointPass()).get();
-                if(answer.equals("OK"))
+                if(answer.equals("DONE\n"))
                 {
                     Toast.makeText(this.context, "User Name & Password Saved Successfully", Toast.LENGTH_LONG).show();
                     startActivity(new Intent(EditAccessPointActivity.this, MainActivity.class));

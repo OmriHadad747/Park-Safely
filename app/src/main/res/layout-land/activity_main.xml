@@ -51,7 +51,7 @@
         android:orientation="horizontal">
 
         <android.support.v7.widget.CardView
-            android:id="@+id/wifi_button"
+            android:id="@+id/wifi_btn"
             android:layout_width="120dp"
             android:onClick="wifiButtonOnClick"
             android:layout_height="190dp"

@@ -3,8 +3,12 @@ package com.omriHadad.ParkSafely.ServerTasks;
 import android.os.AsyncTask;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
@@ -40,6 +44,35 @@ public class UpdateAccessPointTask extends AsyncTask<String, Void, String>
         os.close();
     }
 
+    private String convertStreamToString(InputStream is)
+    {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+        try
+        {
+            while ((line = reader.readLine()) != null)
+                sb.append(line + "\n");
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            try
+            {
+                is.close();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        return sb.toString();
+    }
+
     private String execTask(String url_, String accessPointName, String accessPointPass)
     {
         try
@@ -47,12 +80,12 @@ public class UpdateAccessPointTask extends AsyncTask<String, Void, String>
             URL url = new URL(url_);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
-            //TODO - check if the next line is necessary
             connection.setRequestProperty("Content-Type", "application/json; charset = utf-8");
             JSONObject json = buildJsonObject(accessPointName, accessPointPass);
             setPostRequestContent(connection, json);
             connection.connect();
-            return connection.getResponseMessage();
+            InputStream inStream = connection.getInputStream();
+            return convertStreamToString(inStream);
         }
         catch (MalformedURLException e)
         {

@@ -15,13 +15,13 @@
         layout="@layout/action_bar" />
 
     <android.support.v7.widget.CardView
+        android:id="@+id/start_end_detection_btn"
         android:layout_width="match_parent"
         android:layout_height="70dp"
         android:layout_margin="15dp"
         android:clickable="true"
         android:onClick="startEndDetectionOnClick"
         android:translationZ="5dp"
-        app:cardBackgroundColor="@color/primary_dark_color"
         app:cardCornerRadius="20dp"
         app:cardElevation="3dp">
 
@@ -30,10 +30,10 @@
             android:layout_height="match_parent">
 
             <TextView
+                android:id="@+id/start_end_detection_txt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:text="Start Detection"
                 android:textColor="@color/text_color_primary_bg"
                 android:textSize="20dp"
                 android:textStyle="bold" />
@@ -50,7 +50,7 @@
         android:orientation="horizontal">
 
         <android.support.v7.widget.CardView
-            android:id="@+id/wifi_button"
+            android:id="@+id/wifi_btn"
             android:layout_width="160dp"
             android:layout_height="190dp"
             android:layout_margin="10dp"

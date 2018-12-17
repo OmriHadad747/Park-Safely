@@ -48,10 +48,17 @@ void chooseRange(int range)  /*Set the range to whatever is appropriate for your
 
 void hasNewPhotos()
 {
-  /*if(hasNewPhotos_)
+  Serial.println("HasNewPhotos");
+  if(hasNewPhotos_)
+  {
+    Serial.println("Has Photos");
     accessPointServer.send(200, "text/html", "YES");
+  }
   else
-    accessPointServer.send(200, "text/html", "NO");*/
+  {
+    Serial.println("Has Photos");
+    accessPointServer.send(200, "text/html", "NO");
+  }
 }
 
 void connectedOnOff()
@@ -59,7 +66,7 @@ void connectedOnOff()
   StaticJsonBuffer<200> jsonBuffer;
   String jsonStr = "";
   jsonStr += accessPointServer.arg("plain");
-  Serial.println(jsonStr);
+  /*Serial.println(jsonStr);*/
   JsonObject& json = jsonBuffer.parseObject(jsonStr);
   if(!json.success())
     Serial.println("Json Parse Is Failed");
@@ -70,14 +77,13 @@ void connectedOnOff()
     {
       isClientConnected = true;
       Serial.println("Client Connected");
-      accessPointServer.send(200, "text/html", "OK");
     }
     else if(state == "false")
     {
       isClientConnected = false;
       Serial.println("Client Disconnected");
-      accessPointServer.send(200, "text/html", "OK");
     }
+    accessPointServer.send(200, "text/html", "DONE");
   }
 }
 
@@ -91,7 +97,7 @@ void updateAccessPointDetails()
     Serial.println("Json Parse Is Failed");
   else
   {
-    accessPointServer.send(200, "text/html", "OK");
+    accessPointServer.send(200, "text/html", "DONE");
     //TODO - save the detailes to SD card
   }
 }
@@ -101,7 +107,7 @@ void startEndDetection()
   StaticJsonBuffer<200> jsonBuffer;
   String jsonStr = "";
   jsonStr += accessPointServer.arg("plain");
-  Serial.println(jsonStr);
+  /*Serial.println(jsonStr);*/
   JsonObject& json = jsonBuffer.parseObject(jsonStr);
   if(!json.success())
     Serial.println("Json Parse Is Failed");
@@ -112,14 +118,14 @@ void startEndDetection()
     {
       isParking = true;
       Serial.println("Detection started");
-      accessPointServer.send(200, "text/html", "OK");
+      
     }
     else if(state == "false")
     {
       isParking = false;
       Serial.println("Detection ended");
-      accessPointServer.send(200, "text/html", "OK");
     }
+    accessPointServer.send(200, "text/html", "DONE");
   }
 }
 
@@ -167,7 +173,7 @@ void setup(void)
   accessPointServer.on("/start_end_detection", startEndDetection);
   accessPointServer.on("/update_access_point_details", updateAccessPointDetails);
   accessPointServer.on("/connected_on_off", connectedOnOff);
-  accessPointServer.on("/has_New_Photos", hasNewPhotos);
+  accessPointServer.on("/has_new_photos", hasNewPhotos);
   accessPointServer.begin();
 
   if(!accel.begin())
