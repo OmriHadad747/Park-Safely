@@ -19,7 +19,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -77,10 +76,9 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        Log.d(TAG, "on create start work");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        requestPermissions();
 
         /*initialize important variables*/
         this.context = getApplicationContext();
@@ -90,13 +88,14 @@ public class MainActivity extends AppCompatActivity
         apInfo = new AccessPointInfo();
         this.fileJob = new FileJobs(this.context, FILE_NAME);
 
-        this.fileHandler();  /*read or write JSON file to get/set access point name & password*/
-        this.setIsConnected();  /*check if connected to park safely and sets the variable isConnected*/
-        this.setWifiImg(fromWhere.onCreate);  /*set Images depends on wifi connection status*/
-        this.setCloneImg(fromWhere.onCreate);
-        this.setDetectionBtnColor(fromWhere.onCreate);
+        requestPermissions();
+        this.fileHandler(); /*read or write JSON file to get/set access point name & password*/
+        this.setIsConnected(); /*check if connected to park safely and sets the variable isConnected*/
+        this.setWifiImg(fromWhere.onCreate); /*set Images depends on wifi connection status*/
+        this.setCloneImg(fromWhere.onCreate); /*set clone img, red-if the is new photos to clone, white-the opposite*/
+        this.setDetectionBtnColor(fromWhere.onCreate); /*set color for detection button depend on the connection status*/
         this.setToolbar();  /*set toolbar name*/
-
+        Log.d(TAG, "on create finish work");
     }
 
     /*===========================logical functions================================================*/
@@ -111,6 +110,7 @@ public class MainActivity extends AppCompatActivity
     {
         if(!checkIfFileAlreadyExist())
         {
+            Log.d(TAG, "its the first time for the user in the app");
             File path = this.context.getFilesDir();
             fileJob.writeJsonFile(apInfo, new File(path, FILE_NAME));
             this.accessPointName = apInfo.getAccessPointName();
@@ -118,6 +118,7 @@ public class MainActivity extends AppCompatActivity
         }
         else
         {
+            Log.d(TAG, "its not the first time for the user in the app");
             apInfo = fileJob.readJsonFile();
             this.accessPointName = apInfo.getAccessPointName();
             this.accessPointPass = apInfo.getAccessPointPass();
@@ -161,12 +162,23 @@ public class MainActivity extends AppCompatActivity
     private void enableLocation()
     {
         LocationManager lm = (LocationManager)this.context.getSystemService(Context.LOCATION_SERVICE);
+        boolean flag = false;
         try
         {
-            if(!lm.isProviderEnabled(LocationManager.GPS_PROVIDER))
-                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+            Log.d(TAG, "waiting for location will be enabled by the user");
+            while(!lm.isProviderEnabled(LocationManager.GPS_PROVIDER))
+            {
+                if(!flag)
+                {
+                    Toast.makeText(context, "You Have To Enable Location First", Toast.LENGTH_SHORT).show();
+                    flag = true;
+                    startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                }
+                else continue;
+            }
+            Log.d(TAG, "location was enabled by the user");
         }
-        catch(Exception e){}
+        catch(Exception ignored){}
     }
 
     private boolean updateServerAboutConnection(boolean state)
@@ -184,6 +196,7 @@ public class MainActivity extends AppCompatActivity
                     this.setCloneImg(fromWhere.updateConnectionOn); /*update clone img*/
                     this.setDetectionBtnColor(fromWhere.updateConnectionOn); /*update start end detection color*/
                     Toast.makeText(this.context, "Connected To Park-Safely", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "connected");
                     return true;
                 }
                 else if(!state)
@@ -196,6 +209,7 @@ public class MainActivity extends AppCompatActivity
                     this.wfManager.disableNetwork(this.accessPointId);
                     this.wfManager.setWifiEnabled(false);
                     Toast.makeText(this.context, "Disconnected From Park-Safely", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "disconnected");
                     return true;
                 }
             }
@@ -212,7 +226,7 @@ public class MainActivity extends AppCompatActivity
         return false;
     }
 
-    private boolean hasNewPhotos()
+    private boolean hasNewPhotosToClone()
     {
         try
         {
@@ -249,15 +263,16 @@ public class MainActivity extends AppCompatActivity
     {
         if(!this.isConnected)
         {
-            enableWifi();
+            Log.d(TAG, "try to connect");
             enableLocation();
+            enableWifi();
             registerReceiver(this.scanResultBroadcast, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         }
         else
         {
+            Log.d(TAG, "try to disconnect");
             int attempts = DISCONN_ATTEMPTS;
-            while(!updateServerAboutConnection(false) &&  attempts-- > 0)
-                Log.d(TAG, "disconnect - attempt number: " + attempts);
+            while(!updateServerAboutConnection(false) &&  attempts-- > 0);
         }
     }
 
@@ -275,13 +290,15 @@ public class MainActivity extends AppCompatActivity
                     {
                         this.isDetect = false;
                         this.setDetectionBtnColor(fromWhere.startEndDetectionOff);
-                        Toast.makeText(this.context, "Detection Disabled", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this.context, "Detection turned Off", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "end detection");
                     }
                     else
                     {
                         this.isDetect = true;
                         this.setDetectionBtnColor(fromWhere.startEndDetectionOn);
-                        Toast.makeText(this.context, "Detection Enabled", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this.context, "Detection turned On", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "start detection");
                     }
                 }
                 else if(answer.equals("ERROR"))
@@ -369,6 +386,7 @@ public class MainActivity extends AppCompatActivity
                 break;
             }
         }
+        Log.d(TAG, "setDetectionBtnColor done, call me: " + whoCallMe.toString());
     }
 
     protected void setCloneImg(fromWhere whoCallMe)
@@ -379,7 +397,7 @@ public class MainActivity extends AppCompatActivity
         {
             case onCreate:
             {
-                if(this.isConnected && hasNewPhotos())
+                if(this.isConnected && hasNewPhotosToClone())
                 {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                         cloneImg.setImageDrawable(getDrawable(R.drawable.ic_file_download_red));
@@ -393,7 +411,7 @@ public class MainActivity extends AppCompatActivity
             }
             case updateConnectionOn:
             {
-                if(hasNewPhotos())
+                if(hasNewPhotosToClone())
                 {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                         cloneImg.setImageDrawable(getDrawable(R.drawable.ic_file_download_red));
@@ -415,6 +433,7 @@ public class MainActivity extends AppCompatActivity
                 break;
             }
         }
+        Log.d(TAG, "setCloneImg done, call me: " + whoCallMe.toString());
     }
 
     protected void setWifiImg(fromWhere whoCallMe)
@@ -462,20 +481,18 @@ public class MainActivity extends AppCompatActivity
             }
             case onReceive: /*if the user turned off manually*/
             {
-                if(!this.wfManager.isWifiEnabled())
-                {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                        wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
-                    wifiTxt.setText("Tap To Connect");
-                    this.isConnected = false;
-                    this.startEndDetectionOnClick(null);
-                    this.setCloneImg(fromWhere.setWifiImg);
-                    this.setDetectionBtnColor(fromWhere.setWifiImg);
-                    unregisterReceiver(this.wifiBroadcast);
-                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                    wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
+                wifiTxt.setText("Tap To Connect");
+                this.isConnected = false;
+                this.startEndDetectionOnClick(null);
+                this.setCloneImg(fromWhere.setWifiImg);
+                this.setDetectionBtnColor(fromWhere.setWifiImg);
+                unregisterReceiver(this.wifiBroadcast);
                 break;
             }
         }
+        Log.d(TAG, "setWifiImg done, call me: " + whoCallMe.toString());
     }
 
     private void setToolbar()
@@ -533,7 +550,7 @@ public class MainActivity extends AppCompatActivity
 
     public class WifiBroadcastReceiver extends BroadcastReceiver  /*this class implements broadcast receiver*/
     {
-        WifiManager wfManager;
+        private WifiManager wfManager;
 
         public WifiBroadcastReceiver(WifiManager wfManager)
         {
@@ -575,24 +592,21 @@ public class MainActivity extends AppCompatActivity
                 {
                     if (sr.SSID.equals(getAccessPointName()))  /*if the desirable access point founded*/
                     {
+                        Log.d(TAG, "park-safely been found");
                         enableNetwork();
                         int attempts = CONN_ATTEMPTS;
                         while(!updateServerAboutConnection(true) && attempts-- > 0)
-                            Log.d(TAG, "connect - attempt number: " + attempts);
+                            Log.d(TAG, "connect - attempt number: " + attempts + " from " + CONN_ATTEMPTS);
                         unregisterReceiver(scanResultBroadcast);  /*remove scan result event listener*/
                         return;
                     }
                 }
-            }
-            else if(srl.size() == 0)  /*for the case that onReceive called but location is still disabled*/
-            {
-                Toast.makeText(context, "You Have To Enable Location First", Toast.LENGTH_LONG).show();
-                return;
-            }
 
-            Toast.makeText(context, getAccessPointName() + " AP Is Not Found In Wifi Scan Area, Try Again", Toast.LENGTH_LONG).show();
-            unregisterReceiver(scanResultBroadcast);  //remove scan result event listener
-            return;
+                Toast.makeText(context, getAccessPointName() + " AP Is Not Found In Wifi Scan Area, Try Again", Toast.LENGTH_LONG).show();
+                unregisterReceiver(scanResultBroadcast);  //remove scan result event listener
+            }
+            else if(srl.size() == 0)  /*for the case that there is zero access-point in the scan area*/
+                Toast.makeText(context, "There Is No Access-Point In The Area", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -603,12 +617,12 @@ public class MainActivity extends AppCompatActivity
             if (WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(action))
             {
                 connectToParkSafelyAP();
-                return;
             }
             else if (ConnectivityManager.CONNECTIVITY_ACTION.equals(action))
             {
-                setWifiImg(fromWhere.onReceive);
-                return;
+                if(!this.wfManager.isWifiEnabled())
+                    setWifiImg(fromWhere.onReceive);
+                Log.d(TAG, "connectivity event");
             }
         }
     }
