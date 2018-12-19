@@ -91,7 +91,7 @@ public class EditAccessPointActivity extends AppCompatActivity
             else
             {
                 this.apInfo.setAccessPointName(this.newName.getText().toString());
-                this.apInfo.setAccessPointPass(this.newPassword.getText().toString());
+                this.apInfo.setAccessPointPassword(this.newPassword.getText().toString());
                 File path = this.context.getFilesDir();
                 this.fl.writeJsonFile(this.apInfo, new File(path, FILE_NAME)); /*update json file with new values*/
                 UpdateAccessPointTask task = new UpdateAccessPointTask(); /*update the server about changes*/
@@ -100,7 +100,7 @@ public class EditAccessPointActivity extends AppCompatActivity
                     String answer = task.execute(
                             SERVER_ADDRS + "update_access_point_details",
                             this.apInfo.getAccessPointName(),
-                            this.apInfo.getAccessPointPass()).get();
+                            this.apInfo.getAccessPointPassword()).get();
                     if(answer.equals("DONE\n"))
                     {
                         Toast.makeText(this.context, "User Name & Password Saved Successfully", Toast.LENGTH_LONG).show();

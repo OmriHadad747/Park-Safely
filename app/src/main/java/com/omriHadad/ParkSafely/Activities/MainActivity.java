@@ -51,21 +51,11 @@ public class MainActivity extends AppCompatActivity
         dl = new DetectionLogic(this);
         cpl = new ClonePhotosLogic(this);
 
-        requestPermissions();
+        askPermissions();
         this.setWifiImg(FromWhere.onCreate); /*set Images depends on wifi connection status*/
         this.setToolbar();  /*set toolbar name*/
         Log.d(TAG, "on create finish work");
     }
-
-    /*===========================logical functions================================================*/
-
-    private void requestPermissions()
-    {
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)!=(PackageManager.PERMISSION_GRANTED))
-            ActivityCompat.requestPermissions(this, PERMISSIONS, 123);
-    }
-
-    /*===========================onClick functions================================================*/
 
     public void photoGalleryButtonOnClick(View v)
     {
@@ -106,7 +96,11 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(this.context, "Device Is Not Connected To Park-Safely", Toast.LENGTH_SHORT).show();
     }
 
-    /*===========================setters & getters================================================*/
+    private void askPermissions()
+    {
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)!=(PackageManager.PERMISSION_GRANTED))
+            ActivityCompat.requestPermissions(this, PERMISSIONS, 123);
+    }
 
     public void setDetectionBtnColor(FromWhere whoCallMe)
     {

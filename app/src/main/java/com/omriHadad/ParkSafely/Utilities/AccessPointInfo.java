@@ -9,26 +9,26 @@ import android.net.wifi.WifiManager;
 public class AccessPointInfo
 {
     private String accessPointName;
-    private String accessPointPass;
+    private String accessPointPassword;
 
     public AccessPointInfo()
     {
         this.accessPointName = "Park-Safely AP";
-        this.accessPointPass =  "01234567";
+        this.accessPointPassword =  "01234567";
     }
 
     public String getAccessPointName(){return this.accessPointName;}
 
-    public String getAccessPointPass(){return this.accessPointPass;}
+    public String getAccessPointPassword(){return this.accessPointPassword;}
 
     public void setAccessPointName(String accessPointName)
     {
         this.accessPointName = accessPointName;
     }
 
-    public void setAccessPointPass(String accessPointPass)
+    public void setAccessPointPassword(String accessPointPassword)
     {
-        this.accessPointPass = accessPointPass;
+        this.accessPointPassword = accessPointPassword;
     }
 
     public boolean isConnectedToParkSafely(WifiManager wfManager, Context context)

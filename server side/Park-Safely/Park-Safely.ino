@@ -3,144 +3,143 @@
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_ADXL345_U.h>
+#include <SPI.h>
+#include <SD.h>
 #include <math.h>
 #include <ArduinoJson.h>
 
+int csPin = D10;
 Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
 double startX, startY, currX, currY;
 boolean initMeasure = false;
 boolean isParking = false;
 boolean isClientConnected = false;
 boolean hasNewPhotos_ = true;
-const char *accessPointName = "Park-Safely AP", *accessPointPass= "01234567";
+const char *accessPointName, *accessPointPass;
 ESP8266WebServer accessPointServer(80);
 
 void chooseRange(int range)  /*Set the range to whatever is appropriate for your project*/
 {
-  switch(range)
-  {
-    case 16:
+    switch(range)
     {
-      accel.setRange(ADXL345_RANGE_16_G);
-      Serial.println("chooseRange()succeeded");
-      break;
+        case 16:
+        {
+          accel.setRange(ADXL345_RANGE_16_G);
+          break;
+        }
+        case 8:
+        {
+          accel.setRange(ADXL345_RANGE_8_G);
+          break;
+        }
+        case 4:
+        {
+          accel.setRange(ADXL345_RANGE_4_G);
+          break;
+        }
+        case 2:
+        {
+          accel.setRange(ADXL345_RANGE_2_G);
+          break;
+        } 
     }
-    case 8:
-    {
-      accel.setRange(ADXL345_RANGE_8_G);
-      Serial.println("chooseRange()succeeded");
-      break;
-    }
-    case 4:
-    {
-      accel.setRange(ADXL345_RANGE_4_G);
-      Serial.println("ChooseRange()Succeeded");
-      break;
-    }
-    case 2:
-    {
-      accel.setRange(ADXL345_RANGE_2_G);
-      Serial.println("ChooseRange()Succeeded");
-      break;
-    } 
-  }
 }
 
-void hasNewPhotos()
+void hasNewPhotos() /*check if there are new photos*/
 {
-  Serial.println("HasNewPhotos");
-  if(hasNewPhotos_)
-  {
-    Serial.println("Has Photos");
-    accessPointServer.send(200, "text/html", "YES");
-  }
-  else
-  {
-    Serial.println("Has Photos");
-    accessPointServer.send(200, "text/html", "NO");
-  }
+    if(hasNewPhotos_)
+        accessPointServer.send(200, "text/html", "YES");
+    else
+        accessPointServer.send(200, "text/html", "NO");
 }
 
-void connectedOnOff()
+void connectedOnOff() /*set isClientConnected depends on connection status*/
 {
-  StaticJsonBuffer<200> jsonBuffer;
-  String jsonStr = "";
-  jsonStr += accessPointServer.arg("plain");
-  /*Serial.println(jsonStr);*/
-  JsonObject& json = jsonBuffer.parseObject(jsonStr);
-  if(!json.success())
-    Serial.println("Json Parse Is Failed");
-  else
-  {
-    String state = json["state"];
-    if(state == "true")
+    StaticJsonBuffer<200> jsonBuffer;
+    String jsonStr = "";
+    jsonStr += accessPointServer.arg("plain");
+    /*Serial.println(jsonStr);*/
+    JsonObject& json = jsonBuffer.parseObject(jsonStr);
+    if(!json.success())
+        Serial.println("Json Parse Is Failed");
+    else
     {
-      isClientConnected = true;
-      Serial.println("Client Connected");
+        String state = json["state"];
+        if(state == "true")
+        {
+            isClientConnected = true;
+            Serial.println("Client Connected");
+        }
+        else if(state == "false")
+        {
+            isClientConnected = false;
+            Serial.println("Client Disconnected");
+        }
+        accessPointServer.send(200, "text/html", "DONE");
     }
-    else if(state == "false")
-    {
-      isClientConnected = false;
-      Serial.println("Client Disconnected");
-    }
-    accessPointServer.send(200, "text/html", "DONE");
-  }
 }
 
-void updateAccessPointDetails()
+void updateAccessPointDetails() /*this function update the sysfile.txt after change*/
 {
-  StaticJsonBuffer<200> jsonBuffer;
-  String jsonStr = "";
-  jsonStr += accessPointServer.arg("plain");
-  JsonObject& json = jsonBuffer.parseObject(jsonStr);
-  if(!json.success())
-    Serial.println("Json Parse Is Failed");
-  else
-  {
-    accessPointServer.send(200, "text/html", "DONE");
-    //TODO - save the detailes to SD card
-  }
+    StaticJsonBuffer<200> jsonBuffer;
+    String jsonStr = "";
+    jsonStr += accessPointServer.arg("plain");
+    Serial.println(jsonStr);
+    JsonObject& json = jsonBuffer.parseObject(jsonStr);
+    if(!json.success())
+        Serial.println("Json Parse Is Failed");
+    else
+    {
+        accessPointName = json["accessPointName"];
+        /*Serial.println("***********");
+        Serial.println(accessPointName);*/
+        accessPointPass = json["accessPointPass"];
+        /*Serial.println("***********");
+        Serial.println(accessPointPass);*/
+        writeToFile();
+        loadNewDetails();
+        accessPointServer.send(200, "text/html", "DONE");
+    }
 }
 
-void startEndDetection()
+void startEndDetection() /*this function set isParking on&off*/
 {
-  StaticJsonBuffer<200> jsonBuffer;
-  String jsonStr = "";
-  jsonStr += accessPointServer.arg("plain");
-  /*Serial.println(jsonStr);*/
-  JsonObject& json = jsonBuffer.parseObject(jsonStr);
-  if(!json.success())
-    Serial.println("Json Parse Is Failed");
-  else
-  {
-    String state = json["state"];
-    if(state == "true")
+    StaticJsonBuffer<200> jsonBuffer;
+    String jsonStr = "";
+    jsonStr += accessPointServer.arg("plain");
+    /*Serial.println(jsonStr);*/
+    JsonObject& json = jsonBuffer.parseObject(jsonStr);
+    if(!json.success())
+        Serial.println("Json Parse Is Failed");
+    else
     {
-      isParking = true;
-      Serial.println("Detection started");
-      
+        String state = json["state"];
+        if(state == "true")
+        {
+            isParking = true;
+            Serial.println("Detection started");
+        }
+        else if(state == "false")
+        {
+            isParking = false;
+            Serial.println("Detection ended");
+        }
+        accessPointServer.send(200, "text/html", "DONE");
     }
-    else if(state == "false")
-    {
-      isParking = false;
-      Serial.println("Detection ended");
-    }
-    accessPointServer.send(200, "text/html", "DONE");
-  }
 }
 
 void printAccelDate(sensors_event_t event)   /*Display the results (acceleration is measured in m/s^2)*/
 {
-  Serial.print("X: ");
-  Serial.print(event.acceleration.x);
-  Serial.print("  ");
-  Serial.print("Y: "); 
-  Serial.print(event.acceleration.y); 
-  Serial.print("  ");
-  Serial.print("Z: "); 
-  Serial.print(event.acceleration.z); 
-  Serial.print("  ");
-  Serial.println("m/s^2 ");
+    Serial.print("X: ");
+    Serial.print(event.acceleration.x);
+    Serial.print("  ");
+    Serial.print("Y: "); 
+    Serial.print(event.acceleration.y); 
+    Serial.print("  ");
+    Serial.print("Z: "); 
+    Serial.print(event.acceleration.z); 
+    Serial.print("  ");
+    Serial.println("m/s^2 ");
 }
 
 void runDetection()
@@ -150,52 +149,110 @@ void runDetection()
     printAccelDate(event);
     if(!initMeasure)
     {
-      startX = event.acceleration.x;
-      startY = event.acceleration.y;
-      initMeasure = true;
+        startX = event.acceleration.x;
+        startY = event.acceleration.y;
+        initMeasure = true;
     }
 
     currX = event.acceleration.x;
     currY = event.acceleration.y;
     
     if(abs(startX-currX) >= 2.00)
-      Serial.println("X change!!");
+        Serial.println("X change!!");
 
     if(abs(startY-currY) >= 2.00)
-      Serial.println("Y change!!");
+        Serial.println("Y change!!");
+}
+
+void loadNewDetails()
+{
+    WiFi.softAPdisconnect(true);
+    WiFi.softAP(accessPointName, accessPointPass);  /*Initialise the access point with new details*/
+}
+
+void writeToFile()
+{
+    SD.remove("sysfile.txt");
+    File jsonFile = SD.open("sysfile.txt", FILE_WRITE);
+    StaticJsonBuffer<200> jsonBuffer;
+    JsonObject& json = jsonBuffer.createObject();
+    json["accessPointName"] = accessPointName;
+    json["accessPointPass"] = accessPointPass;
+    String jsonStr = "";
+    json.printTo(jsonStr);
+    if(jsonFile)
+        jsonFile.println(jsonStr);
+    jsonFile.close();
+}
+
+void readFromFile() /*read data from file and set AP name&password*/
+{
+    File jsonFile = SD.open("sysfile.txt");
+    if(jsonFile)
+    {
+        StaticJsonBuffer<200> jsonBuffer;
+        JsonObject& json = jsonBuffer.parseObject(jsonFile);
+        jsonFile.close();
+        accessPointName = json["accessPointName"];
+        accessPointPass = json["accessPointPass"];
+    }
+}
+
+void createFile() /*create the file for the first time with default values*/
+{
+    /*Serial.println("creating sysfile.txt...");*/
+    File jsonFile = SD.open("sysfile.txt", FILE_WRITE);
+    StaticJsonBuffer<200> jsonBuffer;
+    JsonObject& json = jsonBuffer.createObject();
+    json["accessPointName"] = "Park-Safely AP";
+    json["accessPointPass"] = "01234567";
+    String jsonStr = "";
+    json.printTo(jsonStr);
+    if(jsonFile)
+        jsonFile.println(jsonStr);
+    jsonFile.close();
+    readFromFile(); 
 }
 
 void setup(void) 
 {
-  Serial.begin(9600);
+    delay(3000);
+    Serial.begin(9600);
+    Serial.println("setup is start");
 
-  WiFi.softAP(accessPointName, accessPointPass);  /*Initialise the access point*/
-  accessPointServer.on("/start_end_detection", startEndDetection);
-  accessPointServer.on("/update_access_point_details", updateAccessPointDetails);
-  accessPointServer.on("/connected_on_off", connectedOnOff);
-  accessPointServer.on("/has_new_photos", hasNewPhotos);
-  accessPointServer.begin();
+    if(!SD.begin(csPin)) /*Initialise the SD card*/
+    {
+        Serial.println("SD card initialization failed!");
+        while(1);
+    }
 
-  if(!accel.begin())
-  {
-    Serial.println("Ooops, no ADXL345 detected ... Check your wiring!");
-    while(1);
-  }
-  chooseRange(16);  /*Initialise the sensor*/
-
-  delay(3000);
-  Serial.println("Setup is done");
-
-  if(!isClientConnected)
-    Serial.println("no client connected");
+    if(SD.exists("sysfile.txt"))
+        readFromFile();
+    else
+        createFile();
+        
+    WiFi.softAP(accessPointName, accessPointPass);  /*Initialise the access point*/
+    accessPointServer.on("/start_end_detection", startEndDetection);
+    accessPointServer.on("/update_access_point_details", updateAccessPointDetails);
+    accessPointServer.on("/connected_on_off", connectedOnOff);
+    accessPointServer.on("/has_new_photos", hasNewPhotos);
+    accessPointServer.begin();
+    
+    if(!accel.begin()) /*Initialise the ADXL345*/
+    {
+        Serial.println(" ADXL345 initialization failed!");
+        while(1);
+    }
+    chooseRange(16);  
+    Serial.println("setup is done");
 }
 
 void loop(void) 
 {  
-  accessPointServer.handleClient();
+    accessPointServer.handleClient();
   
-  if(isClientConnected && isParking)
-    runDetection();
+    if(isParking)
+        runDetection();
 
   /*dont remove
   if(clientConnected)

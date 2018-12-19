@@ -44,7 +44,7 @@ public class ConnectivityLogic
         this.fl = new FilesLogic(this.ma.getContext());
         apInfo = this.fl.fileHandler();
         this.accessPointName = apInfo.getAccessPointName();
-        this.accessPointPass = apInfo.getAccessPointPass();
+        this.accessPointPass = apInfo.getAccessPointPassword();
         this.setIsConnected(); /*check if connected to park safely and sets the variable isConnected*/
     }
 
