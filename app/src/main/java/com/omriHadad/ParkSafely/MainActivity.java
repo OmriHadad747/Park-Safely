@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity
     private FileJobs fileJob;
     private WifiManager wfManager ;
     private WifiBroadcastReceiver scanResultBroadcast;
-    private WifiBroadcastReceiver wifiBroadcast;
+    private WifiBroadcastReceiver wifiConnectivityBroadcast;
     private int accessPointId;
     private String accessPointName;
     private String accessPointPass;
@@ -69,7 +69,8 @@ public class MainActivity extends AppCompatActivity
         this.context = getApplicationContext();
         this.wfManager = (WifiManager) this.context.getSystemService(Context.WIFI_SERVICE);
         this.scanResultBroadcast = new WifiBroadcastReceiver(this.wfManager);
-        this.wifiBroadcast = new WifiBroadcastReceiver(this.wfManager);
+        this.wifiConnectivityBroadcast = new WifiBroadcastReceiver(this.wfManager);
+        registerReceiver(this.wifiConnectivityBroadcast, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
         apInfo = new AccessPointInfo();
         this.fileJob = new FileJobs(this.context, FILE_NAME);
 
@@ -77,8 +78,6 @@ public class MainActivity extends AppCompatActivity
         this.fileHandler(); /*read or write JSON file to get/set access point name & password*/
         this.setIsConnected(); /*check if connected to park safely and sets the variable isConnected*/
         this.setWifiImg(fromWhere.onCreate); /*set Images depends on wifi connection status*/
-        this.setCloneImg(fromWhere.onCreate); /*set clone img, red-if the is new photos to clone, white-the opposite*/
-        this.setDetectionBtnColor(fromWhere.onCreate); /*set color for detection button depend on the connection status*/
         this.setToolbar();  /*set toolbar name*/
         Log.d(TAG, "on create finish work");
     }
@@ -321,22 +320,6 @@ public class MainActivity extends AppCompatActivity
 
         switch(whoCallMe)
         {
-            case onCreate:
-            {
-                if(!this.isConnected)
-                {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                        startEndDetectionColor.setCardBackgroundColor(Color.parseColor("#FF848C8B")); /*gray color*/
-                    startEndDetectionTxt.setText("Start Detection");
-                }
-                else
-                {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                        startEndDetectionColor.setCardBackgroundColor(Color.parseColor(("#3090A1"))); /*green color*/
-                    startEndDetectionTxt.setText("Start Detection");
-                }
-                break;
-            }
             case updateConnectionOn:
             {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
@@ -368,6 +351,7 @@ public class MainActivity extends AppCompatActivity
             {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                     startEndDetectionColor.setCardBackgroundColor(Color.parseColor("#FF848C8B")); /*gray color*/
+                startEndDetectionTxt.setText("Start Detection");
                 break;
             }
         }
@@ -380,20 +364,6 @@ public class MainActivity extends AppCompatActivity
 
         switch(whoCallMe)
         {
-            case onCreate:
-            {
-                if(this.isConnected && hasNewPhotosToClone())
-                {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                        cloneImg.setImageDrawable(getDrawable(R.drawable.ic_file_download_red));
-                }
-                else
-                {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                        cloneImg.setImageDrawable(getDrawable(R.drawable.ic_file_download));
-                }
-                break;
-            }
             case updateConnectionOn:
             {
                 if(hasNewPhotosToClone())
@@ -435,16 +405,15 @@ public class MainActivity extends AppCompatActivity
                     int attempts = 20;
                     while(!updateServerAboutConnection(true) &&  attempts-- > 0)
                         Log.d(TAG, "connect - attempt number: " + attempts);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                        wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
-                    wifiTxt.setText("Tap To Disconnect");
-                    registerReceiver(this.wifiBroadcast, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+                    return;
                 }
                 else
                 {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                         wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
                     wifiTxt.setText("Tap To Connect");
+                    this.setCloneImg(fromWhere.setWifiImg); /*set clone img, red-if the is new photos to clone, white-the opposite*/
+                    this.setDetectionBtnColor(fromWhere.setWifiImg); /*set color for detection button depend on the connection status*/
                 }
                 break;
             }
@@ -453,7 +422,8 @@ public class MainActivity extends AppCompatActivity
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                     wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
                 wifiTxt.setText("Tap To Disconnect");
-                registerReceiver(this.wifiBroadcast, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+                //unregisterReceiver(this.wifiConnectivityBroadcast);
+                //registerReceiver(this.wifiConnectivityBroadcast, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
                 break;
             }
             case updateConnectionOff:
@@ -461,7 +431,7 @@ public class MainActivity extends AppCompatActivity
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                     wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
                 wifiTxt.setText("Tap To Connect");
-                unregisterReceiver(this.wifiBroadcast);
+                //unregisterReceiver(this.wifiConnectivityBroadcast);
                 break;
             }
             case onReceive: /*if the user turned off manually*/
@@ -473,7 +443,7 @@ public class MainActivity extends AppCompatActivity
                 this.startEndDetectionOnClick(null);
                 this.setCloneImg(fromWhere.setWifiImg);
                 this.setDetectionBtnColor(fromWhere.setWifiImg);
-                unregisterReceiver(this.wifiBroadcast);
+                //unregisterReceiver(this.wifiConnectivityBroadcast);
                 break;
             }
         }
@@ -605,9 +575,17 @@ public class MainActivity extends AppCompatActivity
             }
             else if (ConnectivityManager.CONNECTIVITY_ACTION.equals(action))
             {
+                Log.d(TAG, "connectivity event");
+
                 if(!this.wfManager.isWifiEnabled())
                     setWifiImg(fromWhere.onReceive);
-                Log.d(TAG, "connectivity event");
+
+                if(getApInfo().isConnectedToParkSafely(wfManager, context))
+                {
+                    int attempts = CONN_ATTEMPTS;
+                    while(!updateServerAboutConnection(true) && attempts-- > 0)
+                        Log.d(TAG, "connect - attempt number: " + attempts + " from " + CONN_ATTEMPTS);
+                }
             }
         }
     }
