@@ -19,12 +19,10 @@ import java.util.ArrayList;
 
 public class ImageAdapter extends BaseAdapter
 {
+    final static private String PERMISSIONS[] = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
+    final public static int EXTERNAL_REQUEST = 138;
     private Context context;
     public ArrayList<File> images;
-
-    public final String[] EXTERNAL_PERMS = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
-
-    public final int EXTERNAL_REQUEST = 138;
 
     public boolean requestForPermission()
     {
@@ -36,7 +34,7 @@ public class ImageAdapter extends BaseAdapter
             if (!canAccessExternalSd())
             {
                 isPermissionOn = false;
-                ActivityCompat.requestPermissions((Activity) context,EXTERNAL_PERMS, EXTERNAL_REQUEST);
+                ActivityCompat.requestPermissions((Activity) context, PERMISSIONS, EXTERNAL_REQUEST);
             }
         }
 

@@ -23,8 +23,7 @@ import com.omriHadad.ParkSafely.Utilities.FromWhere;
 public class MainActivity extends AppCompatActivity
 {
     final static private String TAG = "parkSafelyLog";
-
-    final static private String permissions[] = {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
+    final static private String PERMISSIONS[] = {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
     static private ConnectivityLogic cl;
     static private DetectionLogic dl;
     static private ClonePhotosLogic cpl;
@@ -63,7 +62,7 @@ public class MainActivity extends AppCompatActivity
     private void requestPermissions()
     {
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)!=(PackageManager.PERMISSION_GRANTED))
-            ActivityCompat.requestPermissions(this, permissions, 123);
+            ActivityCompat.requestPermissions(this, PERMISSIONS, 123);
     }
 
     /*===========================onClick functions================================================*/
