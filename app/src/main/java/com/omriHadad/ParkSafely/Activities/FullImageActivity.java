@@ -1,4 +1,4 @@
-package com.omriHadad.ParkSafely;
+package com.omriHadad.ParkSafely.Activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,6 +10,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+
+import com.omriHadad.ParkSafely.Utilities.ImageAdapter;
+import com.omriHadad.ParkSafely.R;
+
 import java.io.File;
 
 public class FullImageActivity extends AppCompatActivity
@@ -33,16 +37,17 @@ public class FullImageActivity extends AppCompatActivity
         ImageView imageView = findViewById(R.id.image);
         image = adapter.images.get(position);
         Bitmap myBitmap = BitmapFactory.decodeFile(image.getAbsolutePath());
-        //imageView.setImageURI(Uri.fromFile(a));
         imageView.setImageBitmap(myBitmap);
         imageView.setScaleType(ImageView.ScaleType.FIT_XY);
     }
 
-    public void back_buttonOnClick(View v){
-        startActivity(new Intent(FullImageActivity.this, ImageGallery.class));
+    public void back_buttonOnClick(View v)
+    {
+        startActivity(new Intent(FullImageActivity.this, ImageGalleryActivity.class));
     }
 
-    public void delete_buttonOnClick(View v){
+    public void delete_buttonOnClick(View v)
+    {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle("Are you sure you want to delete the image ?");
         alert.setMessage("");
@@ -52,7 +57,7 @@ public class FullImageActivity extends AppCompatActivity
             @Override
             public void onClick(DialogInterface dialog, int which)
             {
-                startActivity(new Intent(FullImageActivity.this, ImageGallery.class));
+                startActivity(new Intent(FullImageActivity.this, ImageGalleryActivity.class));
             }
         });
         alert.setNegativeButton("No",new DialogInterface.OnClickListener()
@@ -64,22 +69,26 @@ public class FullImageActivity extends AppCompatActivity
             }
         });
         alert.create().show();
-        if (image.exists()) {
-            if (image.delete()) {
+
+        if (image.exists())
+        {
+            if (image.delete())
                 System.out.println("file Deleted :" + image.getName());
-            } else {
+            else
                 System.out.println("file not Deleted :" + image.getName());
-            }
         }
     }
 
-    public void imageOnClick(View v){
-        if(hide){
+    public void imageOnClick(View v)
+    {
+        if(hide)
+        {
             hide=false;
             top_bar.setVisibility(View.INVISIBLE);
             bottom_bar.setVisibility(View.INVISIBLE);
         }
-        else{
+        else
+        {
             hide=true;
             top_bar.setVisibility(View.VISIBLE);
             bottom_bar.setVisibility(View.VISIBLE);

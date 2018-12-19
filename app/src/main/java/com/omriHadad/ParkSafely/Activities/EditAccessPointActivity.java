@@ -1,4 +1,4 @@
-package com.omriHadad.ParkSafely;
+package com.omriHadad.ParkSafely.Activities;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -7,14 +7,14 @@ import android.net.wifi.WifiManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.omriHadad.ParkSafely.R;
 import com.omriHadad.ParkSafely.ServerTasks.UpdateAccessPointTask;
 import com.omriHadad.ParkSafely.Utilities.AccessPointInfo;
-import com.omriHadad.ParkSafely.Utilities.FileJobs;
+import com.omriHadad.ParkSafely.Utilities.FilesLogic;
 
 import java.io.File;
 import java.util.concurrent.ExecutionException;
@@ -32,7 +32,7 @@ public class EditAccessPointActivity extends AppCompatActivity
     final static private String ERR_INPUT_TITLE = "Invalid Input";
     final static private String ERR_INPUT = "The input is invalid, please do it again";
     private Context context;
-    private FileJobs fileJob;
+    private FilesLogic fl;
     private AccessPointInfo apInfo;
     private EditText newName, newPassword, confirmNewPassword;
 
@@ -43,9 +43,8 @@ public class EditAccessPointActivity extends AppCompatActivity
         setContentView(R.layout.activity_edit_access_point);
 
         context = getApplicationContext();
-        this.apInfo = MainActivity.getApInfo();
-        this.fileJob = new FileJobs(this.context, FILE_NAME);
-        this.apInfo = fileJob.readJsonFile();
+        this.fl = new FilesLogic(this.context);
+        this.apInfo = fl.readJsonFile();
 
         WifiManager wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         if(!this.apInfo.isConnectedToParkSafely(wfManager, this.context))
@@ -94,7 +93,7 @@ public class EditAccessPointActivity extends AppCompatActivity
                 this.apInfo.setAccessPointName(this.newName.getText().toString());
                 this.apInfo.setAccessPointPass(this.newPassword.getText().toString());
                 File path = this.context.getFilesDir();
-                this.fileJob.writeJsonFile(this.apInfo, new File(path, FILE_NAME)); /*update json file with new values*/
+                this.fl.writeJsonFile(this.apInfo, new File(path, FILE_NAME)); /*update json file with new values*/
                 UpdateAccessPointTask task = new UpdateAccessPointTask(); /*update the server about changes*/
                 try
                 {

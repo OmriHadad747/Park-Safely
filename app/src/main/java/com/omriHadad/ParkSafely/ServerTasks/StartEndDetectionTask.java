@@ -17,19 +17,19 @@ import java.net.URL;
 
 public class StartEndDetectionTask extends AsyncTask<String, Void, String>
 {
-    private static boolean isDetect;
+    private boolean isDetect;
 
     public StartEndDetectionTask(boolean bool)
     {
         this.isDetect = bool;
     }
 
-    private static JSONObject buildJsonObject()
+    private JSONObject buildJsonObject()
     {
         JSONObject json = new JSONObject();
         try
         {
-            if (isDetect)
+            if (this.isDetect)
                 json.accumulate("state", "false");
             else
                 json.accumulate("state", "true");

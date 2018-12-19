@@ -1,4 +1,4 @@
-package com.omriHadad.ParkSafely;
+package com.omriHadad.ParkSafely.Utilities;
 
 import android.Manifest;
 import android.app.Activity;
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 public class ImageAdapter extends BaseAdapter
 {
     private Context context;
-    ArrayList<File> images;
+    public ArrayList<File> images;
 
     public final String[] EXTERNAL_PERMS = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
 

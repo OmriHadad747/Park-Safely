@@ -1,9 +1,11 @@
-package com.omriHadad.ParkSafely;
+package com.omriHadad.ParkSafely.Activities;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+
+import com.omriHadad.ParkSafely.R;
 
 public class SettingsActivity extends AppCompatActivity
 {

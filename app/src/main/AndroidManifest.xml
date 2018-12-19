@@ -21,7 +21,7 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".Activities.MainActivity"
             android:theme="@style/AppTheme">
 
             <intent-filter>
@@ -37,19 +37,19 @@
         </activity>
 
         <activity
-            android:name=".ImageGallery"
+            android:name=".Activities.ImageGalleryActivity"
             android:theme="@style/AppTheme"/>
 
         <activity
-            android:name=".SettingsActivity"
+            android:name=".Activities.SettingsActivity"
             android:theme="@style/AppTheme"/>
 
         <activity
-            android:name=".FullImageActivity"
+            android:name=".Activities.FullImageActivity"
             android:theme="@style/AppTheme"/>
 
         <activity
-            android:name=".EditAccessPointActivity"
+            android:name=".Activities.EditAccessPointActivity"
             android:theme="@style/AppTheme"/>
 
         <uses-library
@@ -57,7 +57,7 @@
             android:required="false"/>
 
         <activity
-            android:name=".CalibrationActivity"/>
+            android:name=".Activities.CalibrationActivity"/>
 
     </application>
 

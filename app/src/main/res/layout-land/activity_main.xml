@@ -8,7 +8,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/background_color"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context=".Activities.MainActivity">
 
     <include
         layout="@layout/action_bar"
