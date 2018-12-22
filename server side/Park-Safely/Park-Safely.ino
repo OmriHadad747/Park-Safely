@@ -10,10 +10,8 @@
 
 int csPin = D10;
 Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
-double startX, startY, currX, currY;
 boolean initMeasure = false;
 boolean isParking = false;
-boolean isClientConnected = false;
 boolean hasNewPhotos_ = true;
 const char *accessPointName, *accessPointPass;
 ESP8266WebServer accessPointServer(80);
@@ -53,38 +51,12 @@ void hasNewPhotos() /*check if there are new photos*/
         accessPointServer.send(200, "text/html", "NO");
 }
 
-void connectedOnOff() /*set isClientConnected depends on connection status*/
-{
-    StaticJsonBuffer<200> jsonBuffer;
-    String jsonStr = "";
-    jsonStr += accessPointServer.arg("plain");
-    /*Serial.println(jsonStr);*/
-    JsonObject& json = jsonBuffer.parseObject(jsonStr);
-    if(!json.success())
-        Serial.println("Json Parse Is Failed");
-    else
-    {
-        String state = json["state"];
-        if(state == "true")
-        {
-            isClientConnected = true;
-            Serial.println("Client Connected");
-        }
-        else if(state == "false")
-        {
-            isClientConnected = false;
-            Serial.println("Client Disconnected");
-        }
-        accessPointServer.send(200, "text/html", "DONE");
-    }
-}
-
 void updateAccessPointDetails() /*this function update the sysfile.txt after change*/
 {
     StaticJsonBuffer<200> jsonBuffer;
     String jsonStr = "";
     jsonStr += accessPointServer.arg("plain");
-    Serial.println(jsonStr);
+    /*Serial.println(jsonStr);*/
     JsonObject& json = jsonBuffer.parseObject(jsonStr);
     if(!json.success())
         Serial.println("Json Parse Is Failed");
@@ -145,6 +117,8 @@ void printAccelDate(sensors_event_t event)   /*Display the results (acceleration
 void runDetection()
 {
     sensors_event_t event;
+    double startX, startY, currX, currY;
+    
     accel.getEvent(&event); /*Get a new sensor event*/
     printAccelDate(event);
     if(!initMeasure)
@@ -191,8 +165,12 @@ void readFromFile() /*read data from file and set AP name&password*/
     if(jsonFile)
     {
         StaticJsonBuffer<200> jsonBuffer;
-        JsonObject& json = jsonBuffer.parseObject(jsonFile);
+        String jsonStr = "";
+        while (jsonFile.available())
+            jsonStr = jsonFile.readStringUntil('\n');
+        /*Serial.println(jsonStr);*/
         jsonFile.close();
+        JsonObject& json = jsonBuffer.parseObject(jsonStr);
         accessPointName = json["accessPointName"];
         accessPointPass = json["accessPointPass"];
     }
@@ -202,16 +180,19 @@ void createFile() /*create the file for the first time with default values*/
 {
     /*Serial.println("creating sysfile.txt...");*/
     File jsonFile = SD.open("sysfile.txt", FILE_WRITE);
-    StaticJsonBuffer<200> jsonBuffer;
-    JsonObject& json = jsonBuffer.createObject();
-    json["accessPointName"] = "Park-Safely AP";
-    json["accessPointPass"] = "01234567";
-    String jsonStr = "";
-    json.printTo(jsonStr);
     if(jsonFile)
-        jsonFile.println(jsonStr);
-    jsonFile.close();
-    readFromFile(); 
+    {
+        StaticJsonBuffer<200> jsonBuffer;
+        JsonObject& json = jsonBuffer.createObject();
+        accessPointName = "Park-Safely AP";
+        accessPointPass = "01234567";
+        json["accessPointName"] = accessPointName;
+        json["accessPointPass"] = accessPointPass;
+        String jsonStr = "";
+        json.printTo(jsonStr);
+        jsonFile.print(jsonStr);
+        jsonFile.close();
+    }
 }
 
 void setup(void) 
@@ -230,17 +211,16 @@ void setup(void)
         readFromFile();
     else
         createFile();
-        
+
     WiFi.softAP(accessPointName, accessPointPass);  /*Initialise the access point*/
     accessPointServer.on("/start_end_detection", startEndDetection);
     accessPointServer.on("/update_access_point_details", updateAccessPointDetails);
-    accessPointServer.on("/connected_on_off", connectedOnOff);
     accessPointServer.on("/has_new_photos", hasNewPhotos);
     accessPointServer.begin();
     
     if(!accel.begin()) /*Initialise the ADXL345*/
     {
-        Serial.println(" ADXL345 initialization failed!");
+        Serial.println("ADXL345 initialization failed!");
         while(1);
     }
     chooseRange(16);  

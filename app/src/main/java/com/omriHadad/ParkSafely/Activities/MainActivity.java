@@ -13,12 +13,10 @@ import android.util.Log;
 import android.view.*;
 import android.widget.*;
 import android.widget.Toast;
-
 import com.omriHadad.ParkSafely.Utilities.ClonePhotosLogic;
 import com.omriHadad.ParkSafely.Utilities.DetectionLogic;
 import com.omriHadad.ParkSafely.R;
 import com.omriHadad.ParkSafely.Utilities.ConnectivityLogic;
-import com.omriHadad.ParkSafely.Utilities.FromWhere;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -27,9 +25,8 @@ public class MainActivity extends AppCompatActivity
     static private ConnectivityLogic cl;
     static private DetectionLogic dl;
     static private ClonePhotosLogic cpl;
-    private Context context;
+    static private Context context;
     private boolean isDetect = false;
-    private boolean isConnected;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -45,15 +42,14 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /*initialize important variables*/
-        this.context = getApplicationContext();
+        context = getApplicationContext();
         cl = new ConnectivityLogic(this);
         dl = new DetectionLogic(this);
         cpl = new ClonePhotosLogic(this);
 
-        askPermissions();
-        this.setWifiImg(FromWhere.onCreate); /*set Images depends on wifi connection status*/
-        this.setToolbar();  /*set toolbar name*/
+        requestPermissions();
+        //this.doDynamicDesign();
+        this.setToolbar();
         Log.d(TAG, "on create finish work");
     }
 
@@ -69,7 +65,7 @@ public class MainActivity extends AppCompatActivity
 
     public void wifiButtonOnClick(View v)
     {
-        if(!this.isConnected)
+        if(!ConnectivityLogic.isConnectedToParkSafely())
             cl.setConnected();
         else
             cl.setDisconnected();
@@ -77,7 +73,7 @@ public class MainActivity extends AppCompatActivity
 
     public void startEndDetectionOnClick(View v)
     {
-        if(this.isConnected)
+        if(ConnectivityLogic.isConnectedToParkSafely())
         {
             if (this.isDetect)
                 dl.startDetection();
@@ -90,149 +86,67 @@ public class MainActivity extends AppCompatActivity
 
     public void cloneOnClick(View v)
     {
-        if(this.isConnected)
+        if(ConnectivityLogic.isConnectedToParkSafely())
             cpl.startClone();
         else
-            Toast.makeText(this.context, "Device Is Not Connected To Park-Safely", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Device Is Not Connected To Park-Safely", Toast.LENGTH_SHORT).show();
     }
 
-    private void askPermissions()
+    private void requestPermissions()
     {
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)!=(PackageManager.PERMISSION_GRANTED))
             ActivityCompat.requestPermissions(this, PERMISSIONS, 123);
     }
 
-    public void setDetectionBtnColor(FromWhere whoCallMe)
-    {
-        android.support.v7.widget.CardView startEndDetectionColor = findViewById(R.id.start_end_detection_btn);
-        TextView startEndDetectionTxt = findViewById(R.id.start_end_detection_txt);
-
-        switch(whoCallMe)
-        {
-            case updateConnectionOn:
-            {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                    startEndDetectionColor.setCardBackgroundColor(Color.parseColor(("#3090A1")));  /*green color*/
-                startEndDetectionTxt.setText("Start Detection");
-                break;
-            }
-            case updateConnectionOff:
-            {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                    startEndDetectionColor.setCardBackgroundColor(Color.parseColor("#FF848C8B")); /*gray color*/
-                break;
-            }
-            case endDetection:
-            {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                    startEndDetectionColor.setCardBackgroundColor(Color.parseColor("#BC5148")); /*red color*/
-                startEndDetectionTxt.setText("End Detection");
-                break;
-            }
-            case startDetection:
-            {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                    startEndDetectionColor.setCardBackgroundColor(Color.parseColor("#3090A1")); /*green color*/
-                startEndDetectionTxt.setText("Start Detection");
-                break;
-            }
-            case setWifiImg:
-            {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                    startEndDetectionColor.setCardBackgroundColor(Color.parseColor("#FF848C8B")); /*gray color*/
-                startEndDetectionTxt.setText("Start Detection");
-                break;
-            }
-        }
-        /*Log.d(TAG, "setDetectionBtnColor done, call me: " + whoCallMe.toString());*/
-    }
-
-    public void setCloneImg(FromWhere whoCallMe)
-    {
-        ImageView cloneImg = findViewById(R.id.clone_img);
-
-        switch(whoCallMe)
-        {
-            case updateConnectionOn:
-            {
-                if(cpl.hasNewPhotosToClone())
-                {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                        cloneImg.setImageDrawable(getDrawable(R.drawable.ic_file_download_red));
-
-                    Toast.makeText(this.context, "You Have New Photos To Clone", Toast.LENGTH_SHORT).show();
-                }
-                break;
-            }
-            case updateConnectionOff:
-            {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                    cloneImg.setImageDrawable(getDrawable(R.drawable.ic_file_download));
-                break;
-            }
-            case setWifiImg:
-            {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                    cloneImg.setImageDrawable(getDrawable(R.drawable.ic_file_download));
-                break;
-            }
-        }
-        /*Log.d(TAG, "setCloneImg done, call me: " + whoCallMe.toString());*/
-    }
-
-    public void setWifiImg(FromWhere whoCallMe)
+    public void doDynamicDesign()
     {
         ImageView wifiImg = findViewById(R.id.wifi_img);
         TextView wifiTxt = findViewById(R.id.wifi_txt);
+        android.support.v7.widget.CardView startEndDetectionColor = findViewById(R.id.start_end_detection_btn);
+        TextView startEndDetectionTxt = findViewById(R.id.start_end_detection_txt);
+        ImageView cloneImg = findViewById(R.id.clone_img);
 
-        switch(whoCallMe)
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
         {
-            case onCreate:
+            if(ConnectivityLogic.isConnectedToParkSafely())
             {
-                if(this.isConnected)
+                wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
+                wifiTxt.setText("Tap To Disconnect");
+                Toast.makeText(context, "Connected To Park-Safely AP", Toast.LENGTH_SHORT).show();
+
+                if(this.isDetect)
                 {
-                    int attempts = 20;
-                    while(!cl.updateServerAboutConnection(true) &&  attempts-- > 0)
-                        Log.d(TAG, "connect - attempt number: " + attempts);
-                    return;
+                    startEndDetectionColor.setCardBackgroundColor(Color.parseColor("#BC5148")); /*red color*/
+                    startEndDetectionTxt.setText("End Detection");
                 }
                 else
                 {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                        wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
-                    wifiTxt.setText("Tap To Connect");
-                    this.setCloneImg(FromWhere.setWifiImg); /*set clone img, red-if the is new photos to clone, white-the opposite*/
-                    this.setDetectionBtnColor(FromWhere.setWifiImg); /*set color for detection button depend on the connection status*/
+                    startEndDetectionColor.setCardBackgroundColor(Color.parseColor(("#3090A1")));  /*green color*/
+                    startEndDetectionTxt.setText("Start Detection");
                 }
-                break;
+
+                if(cpl.hasNewPhotosToClone())
+                {
+                    cloneImg.setImageDrawable(getDrawable(R.drawable.ic_file_download_red));
+                    Toast.makeText(context, "You Have New Photos To Clone", Toast.LENGTH_SHORT).show();
+                }
+                else
+                    cloneImg.setImageDrawable(getDrawable(R.drawable.ic_file_download));
             }
-            case updateConnectionOn:
+            else
             {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                    wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_on));
-                wifiTxt.setText("Tap To Disconnect");
-                break;
-            }
-            case updateConnectionOff:
-            {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                    wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
+                wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
                 wifiTxt.setText("Tap To Connect");
-                break;
-            }
-            case onReceive: /*if the user turned off manually*/
-            {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                    wifiImg.setImageDrawable(getDrawable(R.drawable.ic_wifi_off));
-                wifiTxt.setText("Tap To Connect");
-                this.isConnected = false;
-                this.startEndDetectionOnClick(null);
-                this.setCloneImg(FromWhere.setWifiImg);
-                this.setDetectionBtnColor(FromWhere.setWifiImg);
-                break;
+                Toast.makeText(context, "Not Connected To Park-Safely AP", Toast.LENGTH_SHORT).show();
+
+                startEndDetectionColor.setCardBackgroundColor(Color.parseColor("#FF848C8B")); /*gray color*/
+                startEndDetectionTxt.setText("Start Detection");
+
+                cloneImg.setImageDrawable(getDrawable(R.drawable.ic_file_download));
             }
         }
-        /*Log.d(TAG, "setWifiImg done, call me: " + whoCallMe.toString());*/
+        else
+            Toast.makeText(context, "some message", Toast.LENGTH_SHORT).show();
     }
 
     private void setToolbar()
@@ -241,16 +155,6 @@ public class MainActivity extends AppCompatActivity
         toolbar = findViewById(R.id.tool_bar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("Park-Safely");
-    }
-
-    public void setIsConnected(boolean bool)
-    {
-        this.isConnected = bool;
-    }
-
-    public boolean getIsConnected()
-    {
-        return this.isConnected;
     }
 
     public void setIsDetect(Boolean bool)
@@ -263,8 +167,8 @@ public class MainActivity extends AppCompatActivity
         return this.isDetect;
     }
 
-    public Context getContext()
+    public static Context getContext()
     {
-        return this.context;
+        return context;
     }
 }

@@ -26,12 +26,12 @@ public class DetectionLogic
             if (answer.equals("DONE\n"))
             {
                 this.ma.setIsDetect(false);
-                this.ma.setDetectionBtnColor(FromWhere.startDetection);
-                Toast.makeText(this.ma.getContext(), "Detection turned Off", Toast.LENGTH_SHORT).show();
+                this.ma.doDynamicDesign();
+                Toast.makeText(MainActivity.getContext(), "Detection turned Off", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "end detection");
             }
             else if(answer.equals("ERROR"))
-                Toast.makeText(this.ma.getContext(), "Detection Was Not Enabled/Disabled, Try Again", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.getContext(), "Detection Was Not Enabled/Disabled, Try Again", Toast.LENGTH_LONG).show();
         }
         catch (ExecutionException e)
         {
@@ -52,12 +52,12 @@ public class DetectionLogic
             if (answer.equals("DONE\n"))
             {
                 this.ma.setIsDetect(true);
-                this.ma.setDetectionBtnColor(FromWhere.endDetection);
-                Toast.makeText(this.ma.getContext(), "Detection turned On", Toast.LENGTH_SHORT).show();
+                this.ma.doDynamicDesign();
+                Toast.makeText(MainActivity.getContext(), "Detection turned On", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "start detection");
             }
             else if(answer.equals("ERROR"))
-                Toast.makeText(this.ma.getContext(), "Detection Was Not Enabled/Disabled, Try Again", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.getContext(), "Detection Was Not Enabled/Disabled, Try Again", Toast.LENGTH_LONG).show();
         }
         catch (ExecutionException e)
         {

@@ -14,6 +14,7 @@ import android.widget.Toast;
 import com.omriHadad.ParkSafely.R;
 import com.omriHadad.ParkSafely.ServerTasks.UpdateAccessPointTask;
 import com.omriHadad.ParkSafely.Utilities.AccessPointInfo;
+import com.omriHadad.ParkSafely.Utilities.ConnectivityLogic;
 import com.omriHadad.ParkSafely.Utilities.FilesLogic;
 
 import java.io.File;
@@ -47,7 +48,7 @@ public class EditAccessPointActivity extends AppCompatActivity
         this.apInfo = fl.readJsonFile();
 
         WifiManager wfManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        if(!this.apInfo.isConnectedToParkSafely(wfManager, this.context))
+        if(!ConnectivityLogic.isConnectedToParkSafely())
             showMessage(ERR_CONNECTION_TITLE, ERR_CONNECTION);
     }
 
@@ -91,7 +92,7 @@ public class EditAccessPointActivity extends AppCompatActivity
             else
             {
                 this.apInfo.setAccessPointName(this.newName.getText().toString());
-                this.apInfo.setAccessPointPassword(this.newPassword.getText().toString());
+                this.apInfo.setAccessPointPass(this.newPassword.getText().toString());
                 File path = this.context.getFilesDir();
                 this.fl.writeJsonFile(this.apInfo, new File(path, FILE_NAME)); /*update json file with new values*/
                 UpdateAccessPointTask task = new UpdateAccessPointTask(); /*update the server about changes*/
@@ -100,7 +101,7 @@ public class EditAccessPointActivity extends AppCompatActivity
                     String answer = task.execute(
                             SERVER_ADDRS + "update_access_point_details",
                             this.apInfo.getAccessPointName(),
-                            this.apInfo.getAccessPointPassword()).get();
+                            this.apInfo.getAccessPointPass()).get();
                     if(answer.equals("DONE\n"))
                     {
                         Toast.makeText(this.context, "User Name & Password Saved Successfully", Toast.LENGTH_LONG).show();

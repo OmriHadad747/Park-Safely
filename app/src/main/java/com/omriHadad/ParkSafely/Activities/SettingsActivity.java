@@ -25,4 +25,9 @@ public class SettingsActivity extends AppCompatActivity
     {
         startActivity(new Intent(SettingsActivity.this, CalibrationActivity.class));
     }
+
+    public void restartParkSafelyOnClick(View v)
+    {
+
+    }
 }

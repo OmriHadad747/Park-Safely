@@ -2,10 +2,11 @@ package com.omriHadad.ParkSafely.Utilities;
 
 public enum FromWhere {
     onCreate,
-    onReceive,
-    updateConnectionOn,
-    updateConnectionOff,
+    connectionON,
+    connectionOFF,
     endDetection,
     startDetection,
-    setWifiImg
+    setWifiImg,
+    onReceiveON,
+    onReceiveOFF
 }
