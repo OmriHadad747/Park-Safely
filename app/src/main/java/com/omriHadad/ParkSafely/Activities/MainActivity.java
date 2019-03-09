@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity
         cpl = new ClonePhotosLogic(this);
 
         requestPermissions();
-        //this.doDynamicDesign();
+        this.doDynamicDesign();
         this.setToolbar();
         Log.d(TAG, "on create finish work");
     }

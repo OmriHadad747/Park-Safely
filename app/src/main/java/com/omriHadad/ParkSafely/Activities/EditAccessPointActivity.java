@@ -125,7 +125,7 @@ public class EditAccessPointActivity extends AppCompatActivity
         }
     }
 
-    public void cancelButton(View v)
+        public void cancelButton(View v)
     {
         Toast.makeText(this.context, "Edit Access Point Configuration Was Canceled", Toast.LENGTH_SHORT).show();
         final Intent goSettingIntent = new Intent(EditAccessPointActivity.this, SettingsActivity.class);
