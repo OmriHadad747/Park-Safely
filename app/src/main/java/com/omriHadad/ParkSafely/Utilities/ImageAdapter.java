@@ -24,6 +24,26 @@ public class ImageAdapter extends BaseAdapter
     private Context context;
     public ArrayList<File> images;
 
+    public ImageAdapter(Context c)
+    {
+        context = c;
+        images=new ArrayList<>();
+        String root = Environment.getExternalStorageDirectory().toString();
+        File myDir = new File (root + "/saveImage");
+        boolean haspermission = requestForPermission();
+        if(haspermission && myDir.exists())
+        {
+            File[] files = myDir.listFiles();
+            for(int i=0; files!=null && i<files.length; i++)
+            {
+                File file = files[i];
+                String filePath = file.getPath();
+                if (filePath.endsWith(".jpg")) // Condition to check .jpg file extension
+                    images.add(new File(filePath));
+            }
+        }
+    }
+
     public boolean requestForPermission()
     {
         boolean isPermissionOn = true;
@@ -41,50 +61,31 @@ public class ImageAdapter extends BaseAdapter
         return isPermissionOn;
     }
 
-    public boolean canAccessExternalSd() {
+    public boolean canAccessExternalSd()
+    {
         return (hasPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE));
     }
 
-    private boolean hasPermission(String perm) {
-        return (PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(context, perm));
-
-    }
-
-
-    public ImageAdapter(Context c)
+    private boolean hasPermission(String perm)
     {
-        context = c;
-
-        images=new ArrayList<>();
-        String root = Environment.getExternalStorageDirectory().toString();
-        File myDir = new File (root + "/saveImage");
-        boolean haspermission = requestForPermission();
-        if(haspermission && myDir.exists())
-        {
-            File[] files=myDir.listFiles();
-            for(int i=0; files!=null && i<files.length; i++)
-            {
-                File file = files[i];
-                /*It's assumed that all file in the path are in supported type*/
-                String filePath = file.getPath();
-                if (filePath.endsWith(".jpg")) // Condition to check .jpg file extension
-                    images.add(new File(filePath));
-            }
-        }
+        return (PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(context, perm));
     }
 
     @Override
-    public int getCount() {
+    public int getCount()
+    {
         return images.size();
     }
 
     @Override
-    public Object getItem(int position) {
+    public Object getItem(int position)
+    {
         return images.get(position);
     }
 
     @Override
-    public long getItemId(int position) {
+    public long getItemId(int position)
+    {
         return 0;
     }
 
@@ -92,11 +93,10 @@ public class ImageAdapter extends BaseAdapter
     public View getView(int position, View convertView, ViewGroup parent)
     {
         ImageView imageView = new ImageView(context);
-        File a =images.get(position);
+        File a = images.get(position);
         imageView.setImageURI(Uri.fromFile(a));
         imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         imageView.setLayoutParams(new GridView.LayoutParams(240,240));
         return imageView;
-
     }
 }

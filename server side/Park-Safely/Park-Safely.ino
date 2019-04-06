@@ -9,6 +9,7 @@ FileHandler fileHandler;
 Camera camera;
 ESP8266WebServer APserver(80);
 boolean hasNewPhoto = true;
+static unsigned long offset = 0;
 
 void hasNewPhotos()  //check if there are new photos
 {
@@ -20,44 +21,41 @@ void hasNewPhotos()  //check if there are new photos
 
 void clonePhotos()
 {
+  //static int k = 1;
+  bool eof = false;
   File file = SD.open("1.jpg");
   if(!file)
     Serial.println("file dont exist");
-  int fileSize = file.size();
-  Serial.println("file size is: " + String(fileSize));
+
+  if(!file.seek(offset))
+    Serial.println("seek was failed");
  
-  byte buff[3];
-  for(int i=0; i<3; i++)
+  String chunk = "";
+  String tmp;
+  for(int i=1; i<=180; i++)
   {
     if(file.available())
-      buff[i] = file.read();
-
-    Serial.println("buff [" + String(i) + "]: " + String(buff[i]));
+    {
+      tmp = String(file.read());
+      Serial.println(String(i) + ") " + tmp);
+      chunk += tmp;
+    }
+//    else
+//    {
+//      APserver.send(200, "text/html", "DONE");
+//      eof = true;
+//      Serial.println("sending chunk" + String(k));
+//      offset = 0;
+//      break;
+//    }
   }
-
-  WiFiClient client1 = APserver.client();
-  if(!client1)
-    Serial.println("no client");  
-  else
-  {
-    Serial.println("AP port: " + String(client1.localPort()));
-    IPAddress myIP = client1.localIP();
-    Serial.println("AP ip: " + myIP.toString());
-    
-    Serial.println("client port: " + String(client1.remotePort()));
-    IPAddress himIP = client1.remoteIP();
-    Serial.println("client ip: " + himIP.toString());
-  }
-  APserver.send(200, "text/html", "OK");
-  Serial.println("sending...");
-
-  String str = "";
-  for(int i=0; i<3; i++)
-  {
-    str += String(buff[i]);
-  }
-//  client1.print(str);
-//  client1.write(buff, 3);
+//  file.close();
+//  if(!eof)
+//  {
+    APserver.send(200, "text/html", chunk);
+    //Serial.println("sending chunk: " + String(k++));
+    //offset += 180;
+  //}
 }
 
 void startEndDetection()  //this function set isParking on/off

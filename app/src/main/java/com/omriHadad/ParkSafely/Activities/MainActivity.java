@@ -169,7 +169,7 @@ public class MainActivity extends AppCompatActivity
         getSupportActionBar().setTitle("Park-Safely");
     }
 
-    public void setIsDetect(Boolean bool)
+    public void setIsDetect(boolean bool)
     {
         this.isDetect = bool;
     }

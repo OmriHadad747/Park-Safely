@@ -10,7 +10,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-
 import com.omriHadad.ParkSafely.Utilities.ImageAdapter;
 import com.omriHadad.ParkSafely.R;
 
@@ -92,7 +91,6 @@ public class FullImageActivity extends AppCompatActivity
             hide=true;
             top_bar.setVisibility(View.VISIBLE);
             bottom_bar.setVisibility(View.VISIBLE);
-
         }
     }
 }
