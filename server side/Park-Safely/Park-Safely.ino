@@ -8,7 +8,7 @@ Accelerometer accelerometer;
 FileHandler fileHandler;
 Camera camera;
 ESP8266WebServer APserver(80);
-boolean hasNewPhoto = false;
+boolean hasNewPhoto = true;
 
 void hasNewPhotos()  //check if there are new photos
 {
@@ -16,6 +16,48 @@ void hasNewPhotos()  //check if there are new photos
     APserver.send(200, "text/html", "YES");
   else
     APserver.send(200, "text/html", "NO");   
+}
+
+void clonePhotos()
+{
+  File file = SD.open("1.jpg");
+  if(!file)
+    Serial.println("file dont exist");
+  int fileSize = file.size();
+  Serial.println("file size is: " + String(fileSize));
+ 
+  byte buff[3];
+  for(int i=0; i<3; i++)
+  {
+    if(file.available())
+      buff[i] = file.read();
+
+    Serial.println("buff [" + String(i) + "]: " + String(buff[i]));
+  }
+
+  WiFiClient client1 = APserver.client();
+  if(!client1)
+    Serial.println("no client");  
+  else
+  {
+    Serial.println("AP port: " + String(client1.localPort()));
+    IPAddress myIP = client1.localIP();
+    Serial.println("AP ip: " + myIP.toString());
+    
+    Serial.println("client port: " + String(client1.remotePort()));
+    IPAddress himIP = client1.remoteIP();
+    Serial.println("client ip: " + himIP.toString());
+  }
+  APserver.send(200, "text/html", "OK");
+  Serial.println("sending...");
+
+  String str = "";
+  for(int i=0; i<3; i++)
+  {
+    str += String(buff[i]);
+  }
+//  client1.print(str);
+//  client1.write(buff, 3);
 }
 
 void startEndDetection()  //this function set isParking on/off
@@ -76,19 +118,13 @@ void setup(void)
     accelerometer.setup();
 
     String APname = fileHandler.getAPname();
-    delay(20);
     String APpass = fileHandler.getAPpass();
-    delay(20);
-    Serial.println("my AP name: " + APname + "\t" + APpass);
-    delay(20);
-    
     WiFi.softAP(APname, APpass);  //Initialise the access point
     APserver.on("/start_end_detection", startEndDetection);
     APserver.on("/update_access_point_details", updateAccessPointDetails);
     APserver.on("/has_new_photos", hasNewPhotos);
-    //APserver.on("/clone_photos", clonePhotos);
+    APserver.on("/clone_photos", clonePhotos);
     APserver.begin(); 
-
     Serial.println("main setup done");
 }
 
@@ -103,19 +139,6 @@ void loop(void)
     }
     else
       accelerometer.setInitMesure(false);
-
-  /*dont remove
-  if(clientConnected)
-  {
-    
-    while(Serial.available()>0)
-    {
-      char ch = Serial.read();
-      str += ch;
-      delay(5);
-      Serial.write('x');
-    }
-  }*/
       
   delay(500);
 }

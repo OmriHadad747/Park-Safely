@@ -93,6 +93,7 @@ public class StartEndDetectionTask extends AsyncTask<String, Void, String>
             setPostRequestContent(connection, json);
             connection.connect();
             InputStream inStream = connection.getInputStream();
+
             return convertStreamToString(inStream);
         }
         catch (MalformedURLException e)

@@ -1,7 +1,11 @@
 #include "Arduino.h"
 #include "FileHandler.h"
 
-FileHandler::FileHandler(){}
+FileHandler::FileHandler()
+{
+  APname = "Park-Safely AP"    ;
+  APpass = "01234567";
+}
 
 void FileHandler::setup()
 {
@@ -28,8 +32,6 @@ void FileHandler::createFile()  //create the file for the first time with defaul
     {
         StaticJsonBuffer<200> jsonBuffer;
         JsonObject& json = jsonBuffer.createObject();
-        APname = "Park-Safely AP";
-        APpass = "01234567";
         json["accessPointName"] = APname;
         json["accessPointPass"] = APpass;
         String jsonStr = "";

@@ -4,6 +4,7 @@
 #include "Arduino.h"
 #include <SD.h>
 #include <ArduinoJson.h>
+#include "Base64.h"
 
 class FileHandler
 {
@@ -13,6 +14,7 @@ class FileHandler
 
     void readFromFile();
     void createFile();
+    
     
   public:
     FileHandler();

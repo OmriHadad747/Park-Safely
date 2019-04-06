@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity
     static private ClonePhotosLogic cpl;
     static private Context context;
     private boolean isDetect = false;
+    private boolean hasNewPhotos = false;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -87,7 +88,13 @@ public class MainActivity extends AppCompatActivity
     public void cloneOnClick(View v)
     {
         if(ConnectivityLogic.isConnectedToParkSafely())
-            cpl.startClone();
+        {
+            if(hasNewPhotos)
+            {
+                cpl.startClone();
+                doDynamicDesign();
+            }
+        }
         else
             Toast.makeText(context, "Device Is Not Connected To Park-Safely", Toast.LENGTH_SHORT).show();
     }
@@ -129,9 +136,13 @@ public class MainActivity extends AppCompatActivity
                 {
                     cloneImg.setImageDrawable(getDrawable(R.drawable.ic_file_download_red));
                     Toast.makeText(context, "You Have New Photos To Clone", Toast.LENGTH_SHORT).show();
+                    hasNewPhotos = true;
                 }
                 else
+                {
                     cloneImg.setImageDrawable(getDrawable(R.drawable.ic_file_download));
+                    hasNewPhotos = false;
+                }
             }
             else
             {
@@ -143,6 +154,7 @@ public class MainActivity extends AppCompatActivity
                 startEndDetectionTxt.setText("Start Detection");
 
                 cloneImg.setImageDrawable(getDrawable(R.drawable.ic_file_download));
+                hasNewPhotos = false;
             }
         }
         else
